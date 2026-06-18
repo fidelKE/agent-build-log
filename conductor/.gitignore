@@ -1,0 +1,19 @@
+# External repos cloned for local builds — not committed
+repos/mem0/
+
+# Secrets
+**/.env
+!**/.env.example
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/.venv/
+
+# SQLite state files
+**/*.db
+
+# Eval results (contain real outputs — commit only reports)
+sprint-*/results/
+evals/reports/
+

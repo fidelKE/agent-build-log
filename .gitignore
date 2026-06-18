@@ -1,0 +1,39 @@
+# Secrets
+.env
+*.env
+!.env.example
+!**/.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+**/*.egg-info/
+
+# SQLite state files
+**/*.db
+
+# External repos cloned for local builds
+conductor/repos/mem0/
+
+# Eval run results (contain real LLM outputs)
+conductor/sprint-*/results/
+conductor/evals/reports/
+
+# Logs
+conductor/sprint-*/logs/
+
+# uv lock files in sprint dirs
+conductor/sprint-*/uv.lock
+
+# Internal review working files
+conductor/review_notes.txt
+conductor/review_state.json
+
+# OS
+.DS_Store
+
+# Claude internal
+.claude/
+research/
