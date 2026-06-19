@@ -8,6 +8,7 @@ tags:
   - software-engineering
   - python
 coverImageURL: ""
+coverImagePrompt: "A wide-format tech blog cover (1600x840). Dark background (#0f1117). A clean, architectural blueprint aesthetic. Center: a faint grid of interconnected nodes forming an abstract agent loop — circles connected by thin lines with directional arrows, suggesting an LLM reasoning loop. The lines glow subtly in electric blue (#60a5fa) and violet (#a78bfa). Overlaid in the lower-left: a partially rendered foundation — like scaffolding or construction lines — fading into the grid, implying 'building from scratch.' Top-right: a faint conductor's baton or musical staff lines, abstract and minimal, referencing the 'Conductor' name without being literal. Typography area left clear at the bottom third. Flat, modern, developer-aesthetic. No humans, no robots, no gear icons. The mood: deliberate, technical, honest — not hype. For Midjourney append: --ar 16:9 --style raw --v 6. For DALL-E/Ideogram: Dark developer-aesthetic background, abstract node graph with glowing blue and violet connections suggesting an agent reasoning loop, subtle blueprint grid overlay, partial scaffolding lines in the corner implying construction, minimal conductor's baton silhouette faintly visible, clean wide banner composition, no text, no people, no robots."
 seriesName: "Agent Build Log"
 ---
 

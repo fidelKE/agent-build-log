@@ -8,6 +8,7 @@ tags:
   - python
   - testing
 coverImageURL: ""
+coverImagePrompt: "A wide-format tech blog cover (1600x840). Dark background (#0f1117). Center: a structured 5x8 grid of small hollow circles, evenly spaced on a faint blueprint grid. Most circles glow softly in electric blue (#60a5fa), a handful glow brighter in white-blue (passing), one or two are dim or faintly red (failing). Thin lines connect a few adjacent nodes suggesting groupings or categories — not a full loop, more like a classification map. Lines in electric blue (#60a5fa) and violet (#a78bfa). Lower-left: the same partial scaffolding lines from the intro, fading into the grid — visual continuity with the series. 4-pointed white star in the bottom-right corner. Flat, modern, developer-aesthetic. No text, no humans, no robots. The mood: deliberate, systematic, measured. For Midjourney: --ar 16:9 --style raw --v 6."
 seriesName: "Agent Build Log"
 ---
 
