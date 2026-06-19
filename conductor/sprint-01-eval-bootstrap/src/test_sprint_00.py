@@ -16,7 +16,7 @@ import yaml
 # Fixtures
 # ---------------------------------------------------------------------------
 
-DATASET_PATH = Path(__file__).parents[2] / "evals" / "datasets" / "conductor-v1.yaml"
+DATASET_PATH = Path(__file__).parents[1] / "evals" / "datasets" / "conductor-v1.yaml"
 
 REQUIRED_FIELDS = {"id", "mode", "difficulty", "input", "expected_output", "must_not_contain", "rationale"}
 VALID_MODES = {"setup", "onboarding", "troubleshooting", "qa"}
