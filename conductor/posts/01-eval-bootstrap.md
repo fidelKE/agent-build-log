@@ -123,21 +123,21 @@ The forbidden words were *inside the expected output*. So any correct agent resp
 
 Fix: expected output describes the *behavior* - "use business language only" - not the specific terms to avoid.
 
-I added a test that catches this automatically now. `test_no_must_not_contain_in_expected_output`. 23 structural tests on the dataset, total.
+I added a test that catches this automatically now. `test_no_must_not_contain_in_expected_output`. 20 structural tests on the dataset, total.
 
 ---
 
-## The zero-line: 0.0%
+## The zero-line: 2.5%
 
 I ran the dataset against a stub agent - one that returns the same generic response to every input:
 
 > "I can help you with your data integration setup. Could you provide more details about what you're trying to accomplish?"
 
-Score: 0/40. 0.0%.
+Score: 1/40. 2.5%.
 
-That's the zero-line. The first real score comes once the agent loop exists. Somewhere above 0%, hopefully.
+That's the zero-line. The first real score comes once the agent loop exists. Somewhere above 2.5%, hopefully.
 
-The 0% actually feels right. The keyword evaluator I built is strict - it looks for specific signals in the response, not just any related text. A stub agent gets nothing. That's correct.
+The 2.5% actually feels right. The keyword evaluator I built is strict - it looks for specific signals in the response, not just any related text. A stub agent gets almost nothing. That's correct.
 
 ---
 
@@ -184,8 +184,8 @@ That's the real value of the eval-first approach. Not the coverage. The decision
 |----------|---------------|
 | `conductor-v1.yaml` | 40 cases, source of truth |
 | `conductor-v1-approved.yaml` | 39 SME-approved (1 rejected) |
-| `test_sprint_00.py` | 23/23 structural tests passing |
-| `baseline-stub-sprint00.json` | Zero-line: 0.0% |
+| `test_sprint_00.py` | 20/20 structural tests passing |
+| `baseline-stub-sprint00.json` | Zero-line: 2.5% |
 
 Repo: [github.com/fidelKE/agent-build-log](https://github.com/fidelKE/agent-build-log)
 Code: [`conductor/sprint-01-eval-bootstrap/`](https://github.com/fidelKE/agent-build-log/tree/main/conductor/sprint-01-eval-bootstrap)
