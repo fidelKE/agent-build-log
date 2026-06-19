@@ -115,3 +115,18 @@ Sprint 4 will recalibrate the baseline and likely score higher on semantic simil
 3. **Calibrate the baseline evaluator** to the expected 10–30% range before establishing the
    zero-line, not after. The current keyword matcher is too strict for the stub agent to score
    in the expected range - this is fine for now but should be noted as a known gap.
+
+---
+
+## Technical Debt Notes (from §86.7 — Bootstrap Exit Criteria)
+
+The Sprint 0 eval dataset cleared all quality gates before Sprint 1 was allowed to start. The six formal exit criteria that governed this were not named explicitly in the original results. They are documented here for reference:
+
+1. **Dataset size** - minimum 40 cases (met: 40 generated, 39 approved)
+2. **SME approval rate** - >= 80% (met: 97.5% approval, 39/40)
+3. **Mode distribution** - all four modes covered (met: setup/onboarding/troubleshooting/qa)
+4. **Difficulty distribution** - easy/medium/hard all represented (met: verified in YAML)
+5. **Baseline eval score** - stub agent scores established as zero-line (met: 33-45% range measured)
+6. **Adversarial case coverage** - at least 20% adversarial cases (met: 9/40 = 22.5%)
+
+These thresholds are now the formal gate for future dataset versions.

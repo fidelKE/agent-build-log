@@ -153,6 +153,21 @@ The dataset is genuinely better for it. But I only found it by reading every cas
 
 ---
 
+## What "done" actually means for an eval bootstrap
+
+Before this dataset could gate the first real build, it had to pass six exit criteria:
+
+1. **Dataset size >= 40 cases** - below this threshold, a single wrong case swings the pass rate by more than 2 percentage points, making comparisons meaningless
+2. **SME approval rate >= 80%** - the dataset is only as good as a human expert agreeing the expected outputs are correct; 39/40 passed (97.5%)
+3. **Mode distribution complete** - all four modes represented; a dataset missing Onboarding cases can't catch Onboarding regressions
+4. **Difficulty distribution correct** - at least one hard case and at least 20% adversarial; a dataset of only easy cases sets a floor, not a bar
+5. **Baseline eval score established** - the zero-line exists and is recorded; without it, there's no reference point for whether any future change is an improvement
+6. **Adversarial coverage >= 20%** - 9 of 40 cases test for things the agent should refuse or handle carefully; prompt injection, context leakage, and scope violations need explicit coverage
+
+All six passed. The dataset was ready to gate. The first real agent score comes next.
+
+---
+
 ## What I actually learned
 
 Writing eval cases first changes what you build. Not because the tests constrain the implementation - they don't - but because they force you to decide what "right" looks like before you've built anything to be biased about.
