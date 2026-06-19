@@ -71,7 +71,7 @@ Adversarial by category:
 | Artifact | Path | What It Shows |
 |----------|------|---------------|
 | Eval dataset | `evals/datasets/conductor-v1.yaml` | 40 approved cases across 4 modes, 9 adversarial categories |
-| Test suite | `sprint-01-eval-bootstrap/src/test_sprint_00.py` | 20 structural/quality tests, all passing |
+| Test suite | `sprint-01-eval-bootstrap/src/test_sprint_00.py` | 23 structural/quality tests, all passing |
 | Baseline report | `evals/reports/baseline-stub-sprint00.json` | Zero-line: 2.5% pass rate on stub agent |
 | Baseline runner | `sprint-01-eval-bootstrap/src/baseline.py` | Stub agent + keyword-match evaluator |
 | Review script | `sprint-01-eval-bootstrap/src/review.py` | SME review workflow (to run before Sprint 1) |
@@ -83,7 +83,7 @@ Adversarial by category:
 | Total cases generated | 40 | 40 ✓ |
 | Adversarial categories covered | 9 / 9 | 9 / 9 ✓ |
 | Mode coverage (all 4 modes) | Yes | Yes ✓ |
-| Dataset tests passing | 20 / 20 | 20 / 20 ✓ |
+| Dataset tests passing | 20 / 20 | 23 / 23 ✓ |
 | Baseline pass rate (stub agent) | 10–30% | 2.5% (see note) |
 
 ## Failures and Fixes

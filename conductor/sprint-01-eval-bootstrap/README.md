@@ -63,7 +63,7 @@ the full agent surface - not just the happy path.
 ## What Actually Happened
 
 Generated 40 eval cases covering all four Conductor modes with 9 adversarial categories.
-All 20 structural tests pass. Zero-line established at 2.5% on a stub agent with a strict
+All 23 structural tests pass. Zero-line established at 2.5% on a stub agent with a strict
 keyword-match evaluator. Two bugs found and fixed during the process (see results.md).
 
 SME review complete. 39/40 cases approved (97.5%). One case rejected: `setup-easy-004` (multi-connector setup - each connector has different guidance). Approved dataset locked at `evals/datasets/conductor-v1-approved.yaml`.
@@ -151,5 +151,5 @@ UV_PROJECT_ENVIRONMENT=../.venv uv run python src/baseline.py --dataset evals/da
 | Cases passing SME review | ≥ 32 (80%) | 39/40 (97.5%) ✓ - 1 rejected (setup-easy-004) |
 | Adversarial categories covered | 9 / 9 | 9 / 9 ✓ |
 | Mode coverage (all 4 modes present) | Yes | Yes ✓ |
-| Dataset tests passing | 20 / 20 | 20 / 20 ✓ |
+| Dataset tests passing | 20 / 20 | 23 / 23 ✓ |
 | Baseline pass rate (stub agent) | 10–30% | 2.5% (strict keyword evaluator) |
