@@ -86,57 +86,59 @@ SME review complete. 39/40 cases approved (97.5%). One case rejected: `setup-eas
 
 ## How to Run
 
-All commands run from the `src/` directory inside this sprint.
-
-```bash
-cd conductor/sprint-01-eval-bootstrap/src
-```
+All sprints share the `.venv` at `conductor/.venv`. Run all commands from the sprint root.
 
 **Install dependencies** (first time only):
 
 ```bash
-pip install pyyaml pytest
+cd conductor/sprint-01-eval-bootstrap
+UV_PROJECT_ENVIRONMENT=../.venv uv sync --extra dev
 ```
 
-**Run the structural tests** (validates the eval dataset itself — no API key needed):
+**Dataset paths:**
+- Draft dataset: `evals/datasets/conductor-v1.yaml` (sprint-local copy)
+- Approved dataset: `../evals/datasets/conductor-v1-approved.yaml` (shared `conductor/evals/`)
+
+**Run the structural tests** (validates the eval dataset — no API key needed):
 
 ```bash
-pytest test_sprint_00.py -v
+UV_PROJECT_ENVIRONMENT=../.venv uv run pytest src/test_sprint_00.py -v
 ```
 
 **Run the SME review script** (interactive — step through each case and approve/reject):
 
 ```bash
-python review.py --dataset ../../evals/datasets/conductor-v1.yaml
+UV_PROJECT_ENVIRONMENT=../.venv uv run python src/review.py --dataset evals/datasets/conductor-v1.yaml
 ```
 
 Resume a previous session (picks up where you left off):
 
 ```bash
-python review.py --dataset ../../evals/datasets/conductor-v1.yaml --resume
+UV_PROJECT_ENVIRONMENT=../.venv uv run python src/review.py --dataset evals/datasets/conductor-v1.yaml --resume
 ```
 
 The script saves progress to `review_state.json` after each decision. On exit it writes:
-- `../../evals/datasets/conductor-v1-approved.yaml` — locked approved dataset
+- `../evals/datasets/conductor-v1-approved.yaml` — locked approved dataset (shared location)
 - `review_notes.txt` — one-line rejection reason per case
 
 **Run the baseline eval** (measures zero-line on stub agent — no API key needed):
 
 ```bash
-python baseline.py --dataset ../../evals/datasets/conductor-v1-approved.yaml
+UV_PROJECT_ENVIRONMENT=../.venv uv run python src/baseline.py --dataset ../evals/datasets/conductor-v1-approved.yaml
 ```
 
 Save the report as JSON:
 
 ```bash
-python baseline.py --dataset ../../evals/datasets/conductor-v1-approved.yaml \
-  --output ../../evals/reports/baseline-stub.json
+UV_PROJECT_ENVIRONMENT=../.venv uv run python src/baseline.py \
+  --dataset ../evals/datasets/conductor-v1-approved.yaml \
+  --output ../evals/reports/baseline-stub.json
 ```
 
 Run against the full unreviewed dataset (before SME review):
 
 ```bash
-python baseline.py --dataset ../../evals/datasets/conductor-v1.yaml --use-all
+UV_PROJECT_ENVIRONMENT=../.venv uv run python src/baseline.py --dataset evals/datasets/conductor-v1.yaml --use-all
 ```
 
 ---

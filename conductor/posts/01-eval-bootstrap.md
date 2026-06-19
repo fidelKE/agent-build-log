@@ -123,7 +123,7 @@ The forbidden words were *inside the expected output*. So any correct agent resp
 
 Fix: expected output describes the *behavior* - "use business language only" - not the specific terms to avoid.
 
-I added a test that catches this automatically now. `test_no_must_not_contain_in_expected_output`. 20 structural tests on the dataset, total.
+I added a test that catches this automatically now. `test_no_must_not_contain_in_expected_output`. 23 structural tests on the dataset, total.
 
 ---
 
@@ -184,7 +184,7 @@ That's the real value of the eval-first approach. Not the coverage. The decision
 |----------|---------------|
 | `conductor-v1.yaml` | 40 cases, source of truth |
 | `conductor-v1-approved.yaml` | 39 SME-approved (1 rejected) |
-| `test_sprint_00.py` | 20/20 structural tests passing |
+| `test_sprint_00.py` | 23/23 structural tests passing |
 | `baseline-stub-sprint00.json` | Zero-line: 2.5% |
 
 Repo: [github.com/fidelKE/agent-build-log](https://github.com/fidelKE/agent-build-log)
