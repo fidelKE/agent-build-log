@@ -1,0 +1,175 @@
+metadata:
+  version: '1'
+  reviewed_at: '2026-05-26T11:10:39.137980+00:00'
+  total_approved: 7
+  superseded_by: conductor-v2.yaml
+  kept_for: 'Sprint 4 produced conductor-v2.yaml as a direct result of running this
+    dataset and finding that 38 of 39 cases had no key_decision anchor. The most visible
+    consequence: setup-medium-001 (BigQuery 403) flipped FAIL/PASS between identical
+    runs, producing a 20-point variance on a 5-case suite. The fix, and the reasoning
+    behind it, is documented in conductor-v2.yaml and in the sprint 4 blog post.
+
+    This file is kept intact so readers can run both versions and see the difference
+    in judge stability. Compare eval runs against v1 vs. v2 on the same prompts to
+    measure how much key_decision reduces variance without changing pass rates on
+    clear cases.
+
+    '
+  split: held_out
+  split_ratio: 80/20 stratified by mode
+  train_file: conductor-v1-train.yaml
+cases:
+- id: onboarding-medium-003
+  mode: onboarding
+  difficulty: medium
+  input: I'm a manager, not a technical person. My team set up a Snowflake connector
+    and a dbt connector last week. What does that mean for me?
+  expected_output:
+  - 'Explain Snowflake connector in business terms: the catalog now shows all tables
+    and columns in your Snowflake data warehouse, including who owns them and how
+    often they''re used'
+  - 'Explain dbt connector in business terms: the catalog now shows how data was built
+    — what feeds what, which transformations passed quality tests, and where specific
+    metrics come from'
+  - 'Frame the combined value: your team can now answer ''where does this number come
+    from?'' by tracing it back through both the warehouse and the transformation logic'
+  - Use business language only — no technical jargon
+  must_not_contain:
+  - JDBC
+  - API key
+  - manifest.json
+  - schema
+  rationale: Tests Conductor's ability to explain two complementary connectors to
+    a non-technical manager using business framing. The Snowflake + dbt combination
+    is one of the most common stacks — Snowflake provides the data layer, dbt provides
+    the transformation layer, and together they give full lineage. Updated from a
+    vague 'ask what was set up' placeholder to a fully specified case with context
+    provided.
+  created_date: '2026-06-19'
+- id: qa-medium-002
+  mode: qa
+  difficulty: medium
+  input: 'We''re evaluating two approaches: connecting directly to our data warehouse
+    for metadata extraction vs. extracting from our dbt project. Which is better?
+
+    '
+  expected_output:
+  - Explain that both are complementary, not mutually exclusive
+  - 'Direct warehouse extraction gives you: tables, views, columns, statistics, row
+    counts'
+  - 'dbt extraction gives you: business logic, transformations, test results, column-level
+    lineage'
+  - Recommend using both if dbt is in the stack, starting with whichever the team
+    maintains more rigorously
+  must_not_contain:
+  - use only one
+  - dbt is better
+  - warehouse is better
+  rationale: 'Tests Conductor''s ability to avoid false either/or framing and give
+    a nuanced recommendation based on the actual tradeoffs.
+
+    '
+  created_date: '2026-06-19'
+- id: qa-medium-003
+  mode: qa
+  difficulty: medium
+  input: 'My team uses both Airflow and dbt. Should I set up both connectors or just
+    one?
+
+    '
+  expected_output:
+  - Recommend setting up both — they provide different types of lineage
+  - Airflow provides pipeline-level lineage (DAG dependencies, task runs)
+  - dbt provides transformation-level lineage (column-level, model dependencies, test
+    results)
+  - Suggest starting with dbt if the primary goal is data quality and transformation
+    lineage, Airflow if the primary goal is pipeline observability
+  must_not_contain:
+  - pick one
+  rationale: 'Tests Conductor''s ability to explain the complementary nature of orchestration
+    and transformation lineage without over-simplifying.
+
+    '
+  created_date: '2026-06-19'
+- id: setup-medium-002
+  mode: setup
+  difficulty: medium
+  input: 'I need to connect to a database that''s inside our VPC. It''s not publicly
+    accessible. What are my options?
+
+    '
+  expected_output:
+  - 'Explain the three main private networking options: VPN, VPC peering, PrivateLink/Private
+    Service Connect'
+  - Ask which cloud provider the VPC is on
+  - Note that the choice depends on whether the catalog platform supports each option
+  must_not_contain:
+  - make the database public
+  - disable your firewall
+  rationale: 'Validates Conductor presents secure networking options without suggesting
+    the user weaken their security posture.
+
+    '
+  created_date: '2026-06-19'
+- id: setup-medium-003
+  mode: setup
+  difficulty: medium
+  input: 'I want to use an IAM role for authentication instead of a username and password
+    for my AWS Redshift connector. How does that work?
+
+    '
+  expected_output:
+  - Explain IAM role-based authentication for Redshift (GetClusterCredentials or IAM
+    Identity Center)
+  - 'List what the role needs: redshift:GetClusterCredentials permission, cluster
+    ARN'
+  - Explain that a role ARN will be needed, not a static password
+  - Mention that the catalog platform's agent/connector will need to assume this role
+  must_not_contain:
+  - use a password instead
+  rationale: 'Tests Conductor''s knowledge of IAM-based auth as a credential-free
+    alternative and its ability to guide through the role setup.
+
+    '
+  created_date: '2026-06-19'
+- id: troubleshooting-medium-002
+  mode: troubleshooting
+  difficulty: medium
+  input: 'We rotated our service account key for the BigQuery connector two days ago
+    and the connector is now returning 401 errors.
+
+    '
+  expected_output:
+  - Identify the 401 as an authentication failure consistent with a credential rotation
+  - Ask whether the new key was uploaded to the connector settings (not just rotated
+    in GCP)
+  - Ask whether the old key was disabled before the new one was confirmed working
+  - 'Suggest the resolution: upload the new JSON key file and re-test the connection'
+  must_not_contain:
+  - generate a new service account
+  rationale: 'Tests Conductor''s understanding of the key rotation sequence — the
+    common mistake is rotating at the source without updating the connector.
+
+    '
+  created_date: '2026-06-19'
+- id: troubleshooting-medium-003
+  mode: troubleshooting
+  difficulty: medium
+  input: 'Everything was working but after a Snowflake maintenance window last night,
+    all our connectors are failing. The error is: "SQL compilation error: Object does
+    not exist."
+
+    '
+  expected_output:
+  - Connect the timing to the maintenance window as a likely trigger
+  - Explain that "Object does not exist" typically means a schema, database, or warehouse
+    name changed
+  - Ask whether any Snowflake objects were renamed or dropped during maintenance
+  - Suggest checking the connector configuration for hardcoded object names
+  must_not_contain:
+  - Snowflake is down
+  rationale: 'Tests that Conductor uses timing context (maintenance window) as a diagnostic
+    signal and correctly interprets the SQL compilation error.
+
+    '
+  created_date: '2026-06-19'

@@ -102,7 +102,7 @@ UV_PROJECT_ENVIRONMENT=../.venv uv sync --extra dev
 **Run the structural tests** (validates the eval dataset — no API key needed):
 
 ```bash
-UV_PROJECT_ENVIRONMENT=../.venv uv run pytest src/test_sprint_00.py -v
+UV_PROJECT_ENVIRONMENT=../.venv uv run pytest src/test_sprint_01.py -v
 ```
 
 **Run the SME review script** (interactive — step through each case and approve/reject):
@@ -151,5 +151,5 @@ UV_PROJECT_ENVIRONMENT=../.venv uv run python src/baseline.py --dataset evals/da
 | Cases passing SME review | ≥ 32 (80%) | 39/40 (97.5%) ✓ - 1 rejected (setup-easy-004) |
 | Adversarial categories covered | 9 / 9 | 9 / 9 ✓ |
 | Mode coverage (all 4 modes present) | Yes | Yes ✓ |
-| Dataset tests passing | 20 / 20 | 23 / 23 ✓ |
-| Baseline pass rate (stub agent) | 10–30% | 2.5% (strict keyword evaluator) |
+| Dataset tests passing | 23 / 23 | 23 / 23 ✓ |
+| Baseline pass rate (stub agent) | 10-30% | 2.5% (strict keyword evaluator) |
