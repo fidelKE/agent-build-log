@@ -1,4 +1,4 @@
-# Sprint 0 - Eval Bootstrap
+# Lab 1 - Eval Bootstrap
 
 ## What I Wanted to Test
 
@@ -9,7 +9,7 @@ before writing any code, and use that definition as a regression detector from d
 
 Without a baseline, there's no way to tell if a change made Conductor better or worse.
 The eval dataset is the quality instrument - built before the agent exists so every
-experiment from Sprint 1 onward has something to measure against.
+experiment from Lab 2 onward has something to measure against.
 
 ## Hypothesis
 
@@ -48,7 +48,7 @@ the full agent surface - not just the happy path.
 
 ## Out of Scope
 
-- Building Conductor itself (Sprint 1)
+- Building Conductor itself (Lab 2)
 - Connecting to any real data source or knowledge base
 - Evaluating actual agent responses (no agent exists yet)
 

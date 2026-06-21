@@ -1,4 +1,4 @@
-# Sprint 0 - Results
+# Lab 1 - Results
 
 ## Test Run
 
@@ -74,7 +74,7 @@ Adversarial by category:
 | Test suite | `sprint-01-eval-bootstrap/src/test_sprint_01.py` | 23 structural/quality tests, all passing |
 | Baseline report | `evals/reports/baseline-stub-sprint00.json` | Zero-line: 2.5% pass rate on stub agent |
 | Baseline runner | `sprint-01-eval-bootstrap/src/baseline.py` | Stub agent + keyword-match evaluator |
-| Review script | `sprint-01-eval-bootstrap/src/review.py` | SME review workflow (to run before Sprint 1) |
+| Review script | `sprint-01-eval-bootstrap/src/review.py` | SME review workflow (to run before Lab 2) |
 
 ## Metrics
 
@@ -101,7 +101,7 @@ The keyword-based evaluator in `baseline.py` is intentionally strict - it looks 
 signal keywords from expected output items in the agent response. The stub agent's generic
 response matches very few keywords. This is the correct zero-line for this evaluator.
 The 10–30% expectation assumed a more lenient evaluator. The LLM-as-judge introduced in
-Sprint 4 will recalibrate the baseline and likely score higher on semantic similarity.
+Lab 5 will recalibrate the baseline and likely score higher on semantic similarity.
 
 ## What I Would Do Differently
 
@@ -120,7 +120,7 @@ Sprint 4 will recalibrate the baseline and likely score higher on semantic simil
 
 ## Technical Debt Notes (from §86.7 — Bootstrap Exit Criteria)
 
-The Sprint 0 eval dataset cleared all quality gates before Sprint 1 was allowed to start. The six formal exit criteria that governed this were not named explicitly in the original results. They are documented here for reference:
+The Lab 1 eval dataset cleared all quality gates before Lab 2 was allowed to start. The six formal exit criteria that governed this were not named explicitly in the original results. They are documented here for reference:
 
 1. **Dataset size** - minimum 40 cases (met: 40 generated, 39 approved)
 2. **SME approval rate** - >= 80% (met: 97.5% approval, 39/40)
