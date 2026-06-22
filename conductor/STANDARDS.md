@@ -263,3 +263,36 @@
 | 2 | O01, O02, O03, O04, P01, P02 | — | Sprint 1 `agent.py`: added StructuredLogger (O01, O02, O04); added `soul.md` + `prompt.py` (P01) |
 | 3 | A03, A04, SEC01, SEC02, SEC03, STO01, STO02, STO03, STO04, T04 | — | Sprint 1+2 `agent.py`: parallel tool_use handling — loop now dispatches all blocks, not just first (A03); `response.content` serialized via `model_dump()` + `_normalize_block()` before appending to messages (A04). Sprint 2+3 `agent.py:UNKNOWN_TOOL` — plain dict replaced with `ToolError.to_dict()` (T02); sprint 3 `agent.py` — second logger removed, all agent events routed through StructuredLogger (O04); `search_knowledge_base` brought to T01/T02/T03 parity; `AgentState.context["messages"]` removed — message history moved to Redis + SQLite (STO03/STO04) |
 | 4 | MEM01, MEM02, MEM03, MEM04, MEM05, EVL01, EVL02, EVL03 | — | Sprint 4 `prompt.py`: user_id injected into system prompt (MEM05); `agent.py`: build_system_prompt(user_id) called per session, SYSTEM_PROMPT pre-build removed (P01/MEM05); `main.py`: --user-id arg added; `eval/runner.py`: user_id passed per case. Violations found during testing: `eval/runner.py` returned plain dict without Pydantic model (T01/T03) — fixed by adding `CaseResult` model; `eval/runner.py` read wrong OTel token field names producing zero token counts (EVL03) — fixed by reading `gen_ai.usage.input_tokens`. Root cause: compliance scan only covered `src/`, not `eval/`. Standards and phase-3 skill updated to require full scan of all sprint directories. |
+| 5a | CI01, CI02, CI03, CI04 | — | No violations. Float precision bug found and fixed in `regression_check.py` during tests: `0.89 - 0.86` evaluates to `-0.030000000000000002` in IEEE 754, causing the boundary case to fire incorrectly. Fixed with epsilon tolerance `delta < -(max_regression + 1e-9)`. |
+
+---
+
+## Category: CI/CD Eval Gate (CI)
+
+### RULE-CI01
+- **Sprint introduced:** 5a
+- **Status:** active
+- **Requirement:** The eval gate script (`scripts/check_eval_gate.py`) must evaluate both an overall pass rate threshold AND each required category independently. A report that passes overall but fails a per-category threshold must exit 1. Per-category thresholds are the only protection against aggregate masking.
+- **Violation:** Gate that returns exit 0 when any required category is below its threshold; gate that only checks overall pass rate without per-category evaluation.
+- **Applies to:** `scripts/check_eval_gate.py`.
+
+### RULE-CI02
+- **Sprint introduced:** 5a
+- **Status:** active
+- **Requirement:** The regression checker (`scripts/regression_check.py`) must print the specific case IDs and inputs that regressed (cases that passed in baseline but fail now). A regression report with no case-level detail is not actionable.
+- **Violation:** Regression checker that exits 1 without identifying which cases regressed; checker that only reports aggregate delta.
+- **Applies to:** `scripts/regression_check.py`.
+
+### RULE-CI03
+- **Sprint introduced:** 5a
+- **Status:** active
+- **Requirement:** All gate and regression scripts must be runnable standalone without GitHub Actions. No script may depend on CI environment variables (e.g. `GITHUB_*`) for its core logic. The workflow is a thin caller of scripts — scripts are the primary interface.
+- **Violation:** Script that reads `GITHUB_OUTPUT`, `GITHUB_ENV`, or any `GITHUB_*` variable in its core pass/fail logic; script that cannot be invoked with `python scripts/check_eval_gate.py --report <path>` on a developer's machine.
+- **Applies to:** `scripts/check_eval_gate.py`, `scripts/regression_check.py`, `scripts/run_eval_sample.py`.
+
+### RULE-CI04
+- **Sprint introduced:** 5a
+- **Status:** active
+- **Requirement:** The pre-commit hook installed by `scripts/install_hooks.sh` must only run deterministic tests (pytest, no LLM calls). It must complete in under 60 seconds. Any test that makes LLM calls must not be included in the pre-commit hook.
+- **Violation:** Pre-commit hook that invokes `eval/runner.py`, `eval/judge.py`, or any script that calls the Anthropic API; hook that takes > 60s on a cold run.
+- **Applies to:** `scripts/install_hooks.sh`, `.git/hooks/pre-commit`.

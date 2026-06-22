@@ -188,7 +188,6 @@ That's the real value of the eval-first approach. Not the coverage. The decision
 | `test_sprint_00.py` | 23/23 structural tests passing |
 | `baseline-stub-sprint00.json` | Zero-line: 2.5% |
 
-Repo: [github.com/fidelKE/agent-build-log](https://github.com/fidelKE/agent-build-log)
 Code: [`conductor/sprint-01-eval-bootstrap/`](https://github.com/fidelKE/agent-build-log/tree/main/conductor/sprint-01-eval-bootstrap)
 
 ---
