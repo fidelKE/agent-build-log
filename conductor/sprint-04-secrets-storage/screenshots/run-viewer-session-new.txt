@@ -1,0 +1,44 @@
+
+============================================================
+  RUN  df3312d7...
+============================================================
+
+[2026-06-16T10:44:30.434Z] SESSION NEW  
+
+[2026-06-16T10:44:30.434Z] RUN START  run_id=df3312d7-ef41-4f0d-bb28-9ec936f94afc
+  schema_version : 1.0
+  user_message   : How do I configure a Snowflake connector?
+
+[2026-06-16T10:44:32.523Z] LLM CALL   step-1  (parent: -)
+  status         : success
+  tokens in/out  : 1977 / 79
+  duration_ms    : 2088.7
+  output         : [tool_use: notes_search]
+
+[2026-06-16T10:44:32.524Z] TOOL CALL  step-1.tool-toolu_bd  (parent: step-1)
+  tool           : notes_search
+  status         : success
+  duration_ms    : 0.1
+  input          : {"query": "Snowflake connector setup configuration", "max_results": 5}
+  output         : {"results": [{"id": "note-001", "title": "Snowflake connector setup", "snippet": "To connect Snowflake: provide account identifier, warehouse, database, schema, username, and password or private key. Use IAM role for production environments.", "score": 0.75}, {"id": "note-004", "title": "dbt lineage extraction", "snippet": "To extract dbt lineage, point the connector at the dbt project directory or manifest.json. The parser reads sources, models, and exposures automatically.", "score": 0.25}], "total_found": 2}
+
+[2026-06-16T10:44:35.270Z] LLM CALL   step-2  (parent: -)
+  status         : success
+  tokens in/out  : 2207 / 207
+  duration_ms    : 2740.8
+  output         : {"mode": "setup", "answer": "To configure a Snowflake connector, provide these required fields:\n\n1. **Account Identifier** — your Snowflake account URL (e.g., xy12345.us-east-1)\n2. **Warehouse** — the warehouse name to use for queries\n3. **Database** — the database to connect to\n4. **Schema** — the schema within that database\n5. **Username** — the Snowflake user\n6. **Authentication** — either a password or private key (preferred for production)\n\nFor production environments, use IAM role authentication instead of basic credentials when possible — this reduces key rotation overhead and follows principle of least privilege.\n\nOnce you fill these fields, test the connection to verify access before saving.", "confidence": "medium", "sources": ["note-001"], "needs_more_info": false}
+
+[2026-06-16T10:44:35.273Z] RUN END
+  status         : completed
+  total_steps    : 2
+  total_ms       : 4838.7
+  final_answer   : {"mode": "setup", "answer": "To configure a Snowflake connector, provide these required fields:\n\n1. **Account Identifier** — your Snowflake account URL (e.g., xy12345.us-east-1)\n2. **Warehouse** — the warehouse name to use for queries\n3. **Database** — the database to connect to\n4. **Schema** — the schema within that database\n5. **Username** — the Snowflake user\n6. **Authentication** — either a password or private key (preferred for production)\n\nFor production environments, use IAM role authentication instead of basic credentials when possible — this reduces key rotation overhead and follows principle of least privilege.\n\nOnce you fill these fields, test the connection to verify access before saving.", "confidence": "medium", "sources": ["note-001"], "needs_more_info": false}
+
+────────────────────────────────────────────────────────────
+  SUMMARY
+  input tokens   : 4184
+  output tokens  : 286
+  total tokens   : 4470
+  llm+tool ms    : 4829.6
+────────────────────────────────────────────────────────────
+

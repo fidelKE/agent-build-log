@@ -1,0 +1,48 @@
+# Agent Bill of Materials (ABOM) for Conductor Sprint 4
+# Sprint 4 scope: supply chain security (§59)
+#
+# Registers the hashes of all pipeline components. bom_validator.py reads this
+# file and exits non-zero if any component has drifted since the ABOM was last
+# generated. This is the prompt-hash-drift detection layer: a rotated credential
+# is useless if the system prompt has been silently modified.
+#
+# Deferred (Sprint 7a): SLSA provenance signing, CycloneDX SBOM, MCP server schema pinning.
+
+schema_version: "1.0"
+
+model:
+  id: claude-sonnet-4-6
+  provider: anthropic
+  pinned: true
+
+prompt:
+  file: src/soul.md
+  sha256: 3cd3bbb916677e3f08b136b2ee542d0a7c602ea1b9d2866b1893c0ce8446a7a2
+
+tools:
+  - name: tools.py
+    file: src/tools.py
+    sha256: a01ac466ef9cf55fb4dacf5c47a2d62b33b0b8b69d24fb11963cdea131fbb524
+  - name: secrets.py
+    file: src/secrets.py
+    sha256: 18f8d1d79d1a1e9f96a903e4d9423c833262b07e8a28941d07bd9d18ee3f3e05
+  - name: agent.py
+    file: src/agent.py
+    sha256: 1da224b504328c077c1265dba00a65301958c6716559a0fcf1473b95a49068ed
+  - name: state.py
+    file: src/state.py
+    sha256: d1ea6791ec9f1263136120cf75ad47c91c15d0da7dd92fdfae5da2c6853e1f96
+
+secrets_store:
+  type: vault-kv-v2
+  version: "1.17"
+  dev_mode: true
+
+eval_dataset:
+  file: ../../evals/datasets/conductor-v1-approved.yaml
+  sha256: a561bc0aeedcebe633f7f13b39334be3ae717667ebfd862e3f3a79b9fffb3706
+
+judge_models:
+  # Populated when eval harness is introduced (Lab 5).
+  # Stub present so schema matches §59.2 component list.
+  []
