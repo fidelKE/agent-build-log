@@ -1,0 +1,27 @@
+# REFERENCE SNAPSHOT — do not run this file directly.
+#
+# This file documents what Sprint 4 added to the infrastructure stack:
+#   - Qdrant (L2 episodic/semantic memory, also used by Mem0)
+#
+# Carried forward from Sprint 3:
+#   - Vault (secrets)
+#   - Redis (L1 session state + K/V entity memory)
+#   - Chroma (L2, provisioned — wired in Sprint 6)
+#   - MinIO (L4, provisioned — wired in Sprint 8)
+#
+# To run the actual infrastructure stack, use the canonical file:
+#   cd conductor/
+#   podman compose up -d
+
+# --- What Sprint 4 wired ---
+#
+# qdrant:
+#   Layer 2 episodic/semantic memory. Vector search via fastembed (local, no API key).
+#   Also used internally by Mem0MemoryStore.
+#   Payload filter on user_id enforces namespace isolation.
+#   Volumes persist across restarts — qdrant-data in canonical compose.
+#
+# --- What Sprint 4 still provisions (not yet wired) ---
+#
+# chroma: Layer 2 RAG corpus — wired in Sprint 6.
+# minio:  Layer 4 artifact storage — wired in Sprint 8.

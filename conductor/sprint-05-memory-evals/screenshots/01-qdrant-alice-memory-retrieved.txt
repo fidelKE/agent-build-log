@@ -1,0 +1,31 @@
+# Evidence: Qdrant retrieving seeded memories for fixture user alice
+# Case: troubleshooting-medium-002 (BigQuery 401 after key rotation)
+# Provider: qdrant | Fixture: eval-fixture-alice (5 seeded memories)
+# Shows: search_memory fires, returns 4 results at 77.6ms, agent uses context
+
+llm_call   in=6719tok  out=147tok  2764ms
+  # Agent decides to search memory before answering
+
+notes_search  query="Snowflake authentication failure credential rotati"  found=3
+  # Notes KB searched in parallel
+
+search_memory  query="Snowflake connector authentication credential rota"  user_id=eval-fixture-alice  found=4  77.6ms
+  # Qdrant semantic search: returns 4 results across seeded memories
+  score=0.416  "Snowflake JDBC connection timeout on SELECT queries. Already tried increasing query_t..."
+  score=0.324  "User is setting up Redshift connector for the first time. Authentication method: IAM ..."
+  score=0.265  "BigQuery connector setup: User reported 403 error on connection test. Diagnosed as se..."
+
+llm_call   in=7599tok  out=509tok  7510ms
+  # +880 tokens vs baseline — seeded context injected into prompt
+
+add_memory   content="Snowflake connector authentication failure after credential..."  user_id=eval-fixture-alice  14.6ms
+  # Agent stores new session fact under alice's namespace
+
+llm_call   in=8160tok  out=181tok  3219ms
+  # Final response generation
+
+# KEY OBSERVATION: memory retrieval worked correctly.
+# The case still FAILED — the seeded Snowflake/Redshift facts were not relevant
+# to this BigQuery 403 question. Retrieval fired, context was injected, but
+# the retrieved memories added noise rather than signal for this specific case.
+# This is eval design failure, not memory failure.

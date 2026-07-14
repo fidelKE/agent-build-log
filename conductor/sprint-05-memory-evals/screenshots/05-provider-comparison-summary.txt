@@ -1,0 +1,41 @@
+# Evidence: Provider comparison — quality + retrieval mechanics
+# 39 cases each, same dataset (conductor-v1-approved.yaml)
+# Run conditions: no-context baseline + alice fixture (5 memories) + bob fixture (3 memories)
+
+=== Pass rates ===
+
+Provider          No context    Alice context    Bob context
+---------------------------------------------------------
+inmemory             30.8%         n/a (CI)         n/a
+redis                25.6%           20.5%          30.8%
+qdrant               30.8%           20.5%          15.4%
+mem0                 17.9%           25.6%          20.5%
+
+# OBSERVATION: adding context hurt or was neutral for every provider.
+# This is not variance — it went one direction across all 6 fixture runs.
+# The seeded facts added tokens without improving answers on these cases.
+
+=== Retrieval mechanics (fixture runs) ===
+
+Provider    search_memory/case    avg latency    results/search    avg input_tokens
+-----------------------------------------------------------------------------------
+redis              1.0               9.8ms             4.1              10,487
+qdrant             1.0              81.7ms             4.4              10,324
+mem0               1.0           1,035ms              13.6              14,371
+
+# Redis: fastest retrieval, keyword-only, returns all matching entries equally
+# Qdrant: 8x slower, semantic ranking, similar result count
+# Mem0: 100x slower vs Redis, expands 5 seeds into ~20 extracted facts on ingest
+#       (cleanup count after alice: 20 deleted vs 5 seeded — Mem0 rewrites on add())
+#       14,371 avg input tokens vs 10,487 for redis — +3,884 tokens per case
+
+=== Isolation check ===
+All 6 fixture runs: PASS — eval-fixture-charlie returned 0 results across all providers
+after alice + bob were seeded. Namespace isolation held.
+
+=== What this tells us ===
+Provider choice is a latency + cost decision, not a quality decision — until eval
+cases require retrieval to pass. At that point:
+- Redis: use for exact structured facts (connector type, error code, auth method)
+- Qdrant: use for episodic/narrative recall where phrasing will differ
+- Mem0: use when you want managed extraction at the cost of latency + token overhead

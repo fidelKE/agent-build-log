@@ -1,0 +1,40 @@
+# Evidence: LLM judge non-determinism on setup-medium-001
+# Case: BigQuery 403 permissions error
+# Same agent output, same case, two different judge verdicts
+
+=== Run 1: FAIL ===
+case_id: setup-medium-001
+judge_verdict: FAIL
+judge_reason: "The response identifies 403 as a permissions error and lists IAM roles,
+but fails to ask which service account is being used and omits bigquery.jobUser from
+the minimum required roles list."
+
+=== Run 2: PASS ===
+case_id: setup-medium-001
+judge_verdict: PASS
+judge_reason: "The response correctly identifies 403 as a permissions/IAM error, lists
+required BigQuery roles (dataViewer and admin as examples), suggests verifying
+dataset-level access, and asks a clarifying question about the service account's
+current IAM role, meeting all four key criteria."
+
+# WHAT THIS SHOWS:
+# On a 5-case stability suite, this one borderline case swung the score by 20 points.
+# Neither verdict is wrong — the case sits on a borderline without a key_decision anchor.
+# The judge faced ambiguity and made different calls on different runs.
+
+# THE FIX — add key_decision to the dataset case:
+#
+# expected_output:
+#   must_include:
+#     - identifies 403 as permissions error
+#     - asks clarifying question about service account
+#   key_decision: "Does the response name at least one specific IAM role
+#                  (e.g. bigquery.dataViewer or bigquery.jobUser)?"
+#
+# A primary binary check collapses the borderline. The judge handles nuance,
+# not the question of whether the response is fundamentally on-track.
+
+# HOW TO TELL REAL REGRESSION FROM JUDGE VARIANCE:
+# Re-run twice. Real regressions produce consistent directional drops.
+# Variance bounces. If reasons flip between runs on the same output,
+# the problem is the dataset, not the agent.

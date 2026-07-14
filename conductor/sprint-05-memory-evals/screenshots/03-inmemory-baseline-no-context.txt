@@ -1,0 +1,33 @@
+# Evidence: inmemory baseline — search_memory returns 0 results
+# Case: troubleshooting-hard-001 (Tableau RLS not reflected in catalog)
+# Provider: inmemory | No fixture seeded
+# Shows: the baseline condition — agent calls search_memory, gets nothing,
+#        falls back to reasoning alone. This is the 30.8% pass rate condition.
+
+llm_call   in=2904tok  out=193tok  3091ms
+  # First LLM call — agent decides what tools to use
+
+notes_search  query="Tableau connector row-level security RLS catalog m"  found=3
+search_memory  query="Tableau connector RLS security catalog"  user_id=eval-user-troubleshooting-hard-001  found=0  0.3ms
+  # search_memory fires but returns 0 — no prior session context for this user
+  # inmemory store is per-process: no cross-session persistence
+
+llm_call   in=3383tok  out=184tok  2500ms
+llm_call   in=4562tok  out=166tok  2792ms
+  # Agent loops without memory context — reasoning from KB notes alone
+
+notes_search  query="Tableau connector configuration authentication"  found=3
+notes_search  query="catalog metadata filtering permissions access cont"  found=1
+
+llm_call   in=5072tok  out=247tok  4162ms
+
+add_memory   content="Tableau connector issue: workbooks extracting but row-level..."  user_id=eval-user-troubleshooting-hard-001  0.3ms
+  # Agent stores the session fact — but no prior context was available to help
+
+llm_call   in=5350tok  out=196tok  3465ms
+
+# KEY COMPARISON:
+# Baseline (no context): 5 LLM calls, total ~2904-5350 token range, case FAILED
+# With alice fixture (qdrant): 3 LLM calls, +880 tokens from injected context
+#   — but case still FAILED because seeded facts weren't relevant to this case
+# Conclusion: more tokens, same result. Eval design is the gap.

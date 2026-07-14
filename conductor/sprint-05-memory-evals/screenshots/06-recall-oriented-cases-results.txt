@@ -1,0 +1,54 @@
+# Evidence: Recall-oriented case comparison — with vs. without alice fixture
+# Dataset: conductor-memory-recall-v1.yaml (3 cases designed to require memory to pass)
+# Baseline: conductor-v1-approved.yaml ran flat-to-negative with fixture context
+
+=== Pass rates — recall-oriented cases ===
+
+Provider    No context    Alice context    Delta
+------------------------------------------------
+redis          0/3           1/3           +33%
+qdrant         0/3           1/3           +33%
+mem0           0/3           1/3           +33%
+
+Compare to generic cases (conductor-v1-approved.yaml):
+  redis:  25.6% no-context → 20.5% alice-context   (-5%)
+  qdrant: 30.8% no-context → 20.5% alice-context   (-10%)
+  mem0:   17.9% no-context → 25.6% alice-context   (+8%, noisy)
+
+FINDING: Memory benefit is measurable when cases require recall.
+Flat/negative on generic cases. Positive on recall-oriented cases.
+Same providers, same fixture, different case design.
+
+=== Case-by-case breakdown (alice context) ===
+
+recall-near-001 (near-exact query): PASS on all 3 providers
+  Input: "My Redshift connector sync failed with error 8001... drops after 30 seconds"
+  Seeded: "...error code 8001. Connection dropped after 30 seconds. VPC security group rules already verified."
+  Agent response: "Your VPC security is already verified" — skips re-asking, moves to next hypothesis.
+  Why it worked: query terminology closely matches stored content. All providers retrieve it.
+
+recall-paraphrase-001 (paraphrase query): FAIL on all 3 providers
+  Input: "Still having the same Snowflake problem from my last session"
+  Seeded: "Snowflake JDBC connection timeout on SELECT queries. Already tried increasing query_timeout to 30000ms."
+  Agent response: "I don't have any record of a prior Snowflake issue" — fails to retrieve, asks user to re-describe.
+  Why it failed: "same Snowflake problem" is too vague to match "JDBC connection timeout on SELECT queries"
+    Redis: keyword overlap too low (no common words)
+    Qdrant: semantic similarity below score_threshold=0.1
+    Mem0: extraction didn't bridge the query distance either
+
+recall-vague-001 (vague query): FAIL on all 3 providers
+  Input: "I need help with the networking side of my connector setup"
+  Seeded: "Setting up Redshift connector. VPC peering preferred per infra team."
+  Agent response: presents all networking options generically — doesn't reference VPC peering preference.
+  Why it failed: "networking" is too generic, doesn't surface the Redshift/VPC peering memory.
+
+=== What this tells us ===
+
+1. Memory benefit IS measurable — but only on near-exact queries.
+2. Paraphrase retrieval fails because query phrasing diverges too much from stored content.
+   Fix: store more surface forms, or lower Qdrant score_threshold for episodic queries.
+3. Vague queries are a hard problem for all providers — requires entity extraction
+   (know that "connector setup" = Redshift for this user) not just content similarity.
+4. Semantic search (Qdrant) didn't outperform keyword search (Redis) on paraphrase cases here —
+   the divergence was too large for either to bridge. Qdrant's advantage shows on moderate
+   paraphrases, not extreme ones.

@@ -1,0 +1,28 @@
+# Evidence: Redis retrieving seeded memories for fixture user alice
+# Provider: redis | Fixture: eval-fixture-alice (5 seeded memories)
+# Shows: 5.5ms retrieval vs Qdrant's 77.6ms — Redis keyword scan is fast
+# Shows: Redis returns all 3 keyword-matching entries at equal score (0.333)
+#        — no semantic ranking, just keyword overlap
+
+llm_call   in=6648tok  out=147tok  3591ms
+  # Agent decides to search memory
+
+search_memory  query="Snowflake connector setup"  user_id=eval-fixture-alice  found=3  5.5ms
+  # Redis keyword scan: 5.5ms vs Qdrant's 77.6ms — 14x faster
+  score=0.333  "User is setting up Redshift connector for the first time. Authentication method: IAM ..."
+  score=0.333  "Redshift connector last sync failed with error code 8001. Connection dropped after 30..."
+  score=0.333  "Snowflake JDBC connection timeout on SELECT queries. Already tried increasing query_t..."
+  # All 3 results have equal score — Redis keyword match gives no semantic ranking.
+  # "Snowflake connector setup" matched all 3 because they share keywords.
+
+notes_search  query="Snowflake connector setup account identifier wareh"  found=4
+
+llm_call   in=7414tok  out=409tok  4706ms
+  # +766 tokens vs baseline — seeded context injected
+
+# PROVIDER COMPARISON INSIGHT:
+# Redis (5.5ms): returns everything that matches keywords, equal score, no ranking
+# Qdrant (77.6ms): ranks by semantic similarity — "authentication failure"
+#                  scores 0.416 vs 0.265 for less relevant results
+# For troubleshooting, semantic ranking matters more than speed.
+# For entity lookup (exact facts), Redis's determinism is a feature.
