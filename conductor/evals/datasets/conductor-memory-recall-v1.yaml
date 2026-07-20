@@ -1,0 +1,101 @@
+metadata:
+  version: '1'
+  description: >
+    Recall-oriented eval cases — require seeded fixture memory to pass.
+    Run with: --seed-memories evals/fixtures/memory-sessions.yaml --fixture-user eval-fixture-alice
+    These cases CANNOT pass on agent reasoning alone — the seeded fact is the correct answer path.
+    Compare pass rate with-fixture vs. no-fixture to measure memory benefit.
+  fixture_user: eval-fixture-alice
+  sprint_role: >
+    These 3 cases are the proof-of-principle for the sprint 4 finding: eval cases
+    must require the capability being tested to pass. They are intentionally small.
+
+    Sprint 4 ran the provider benchmark against conductor-v1-approved.yaml (generic
+    troubleshooting cases) and got flat-to-negative results across all providers.
+    Then it ran these 3 recall cases and got 0/3 -> 1/3 with fixture context across
+    all providers. That delta is the evidence that eval design — not the memory
+    system — was the variable.
+
+    Result breakdown:
+    - recall-near-001 (near-exact input match): 0/3 -> 1/3. Passed because input
+      phrasing closely matched stored content. All providers retrieved the fact.
+    - recall-paraphrase-001 (rephrased input): failed on all providers with context.
+      The query diverged too far for keyword or semantic search to bridge.
+    - recall-vague-001 (no connector named): failed on all providers with context.
+      Same reason as paraphrase — retrieval gap, not memory quality gap.
+
+    The paraphrase and vague failure modes are the open question for Sprint 6 (RAG
+    + context engineering). Once the KB exists, these cases become writable at the
+    right level of specificity — combining seeded personal history with retrieved
+    domain knowledge. The sprint 4 cases serve as the baseline to beat.
+
+    Design rule validated by this file: the eval case must require the capability
+    to pass. A case with no seed_memory and no key_decision is measuring general
+    agent quality, not memory benefit. These cases isolate the capability by design.
+
+cases:
+
+# Near-exact: input uses same terminology as stored memory
+# Seeded: "Redshift connector last sync failed with error code 8001. Connection dropped after 30s.
+#          User already verified VPC security group rules allow inbound on port 5439."
+- id: recall-near-001
+  mode: troubleshooting
+  difficulty: medium
+  category: memory_recall
+  input: >
+    My Redshift connector sync failed with error 8001. The connection keeps dropping after
+    about 30 seconds.
+  expected_output:
+    key_decision: >
+      Does the agent reference that VPC security group rules have already been verified,
+      rather than asking the user to check them again?
+    must_include:
+      - references that VPC security group rules were already checked
+      - moves to a different hypothesis rather than re-asking verified steps
+  must_not_contain:
+    - check your VPC security group
+    - verify your security group
+    - have you checked the security group
+
+# Paraphrase: input rephrases the stored memory in different words
+# Seeded: "Snowflake JDBC connection timeout on SELECT queries. Already tried increasing
+#          query_timeout to 30000ms. Did not resolve. Account region: us-east-1."
+- id: recall-paraphrase-001
+  mode: troubleshooting
+  difficulty: medium
+  category: memory_recall
+  input: >
+    Still having the same Snowflake problem from my last session.
+  expected_output:
+    key_decision: >
+      Does the agent reference the prior timeout issue and the failed query_timeout
+      increase, rather than asking the user to describe the problem again?
+    must_include:
+      - references timeout or query_timeout from prior session
+      - does not ask user to re-describe the issue
+  must_not_contain:
+    - can you describe the issue
+    - what seems to be the problem
+    - what error are you seeing
+    - what have you tried so far
+
+# Vague: input loosely references topic without naming the connector
+# Seeded: "User is setting up Redshift connector for the first time. Authentication method:
+#          IAM role. Has not yet configured private networking. VPC peering preferred per infra team."
+- id: recall-vague-001
+  mode: setup
+  difficulty: hard
+  category: memory_recall
+  input: >
+    I need help with the networking side of my connector setup.
+  expected_output:
+    key_decision: >
+      Does the agent reference VPC peering as the preferred option (from prior session),
+      rather than presenting all three networking options generically?
+    must_include:
+      - references VPC peering as the preferred or recommended approach
+      - does not treat this as a first-time conversation about networking options
+  must_not_contain:
+    - there are three main options
+    - you can choose between VPN
+    - let me explain the networking options

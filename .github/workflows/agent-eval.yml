@@ -11,7 +11,7 @@ on:
       dataset:
         description: "Eval dataset filename (from evals/datasets/)"
         required: false
-        default: "conductor-v2.yaml"
+        default: "conductor-v2.yaml"  # public dataset, safe to run in CI
       sample_size:
         description: "Number of cases to sample (leave blank for full suite)"
         required: false
