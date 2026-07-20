@@ -1,0 +1,14 @@
+{
+  "results": [
+    {"id": "setup-001", "mode": "setup", "category": "setup", "input": "How do I connect Snowflake?", "output": "", "final_pass": false},
+    {"id": "setup-002", "mode": "setup", "category": "setup", "input": "What credentials do I need?", "output": "", "final_pass": false},
+    {"id": "troubleshooting-001", "mode": "troubleshooting", "category": "troubleshooting", "input": "Getting 403 on BigQuery connector", "output": "", "final_pass": false},
+    {"id": "troubleshooting-002", "mode": "troubleshooting", "category": "troubleshooting", "input": "Connection times out after 30s", "output": "", "final_pass": false},
+    {"id": "knowledge-001", "mode": "knowledge_qa", "category": "knowledge_qa", "input": "What is incremental sync?", "output": "", "final_pass": false},
+    {"id": "knowledge-002", "mode": "knowledge_qa", "category": "knowledge_qa", "input": "How does lineage tracking work?", "output": "", "final_pass": false},
+    {"id": "onboarding-001", "mode": "onboarding", "category": "onboarding", "input": "Walk me through first-time setup", "output": "", "final_pass": false},
+    {"id": "onboarding-002", "mode": "onboarding", "category": "onboarding", "input": "What should I do after connecting a source?", "output": "", "final_pass": false},
+    {"id": "setup-003", "mode": "setup", "category": "setup", "input": "Which connector do I use for Postgres?", "output": "", "final_pass": false},
+    {"id": "troubleshooting-003", "mode": "troubleshooting", "category": "troubleshooting", "input": "Sync completed but no data appeared", "output": "", "final_pass": false}
+  ]
+}
