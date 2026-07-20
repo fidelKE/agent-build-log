@@ -31,16 +31,17 @@ Conductor is a technical co-pilot for data integration with four capability mode
 
 ```
 conductor/
-  posts/               ← blog post drafts
   evals/datasets/      ← eval cases (generic/public)
   sprint-NN-topic/     ← one folder per lab: src, tests, results, README
   STANDARDS.md         ← engineering rules, introduced per lab
   .env.example         ← environment variable reference
+.github/workflows/
+  agent-eval.yml       ← CI eval quality gate (workflow_dispatch)
 ```
 
 ## Running the code
 
-Each lab from Lab 3 onward has a `pyproject.toml`. All labs share a single virtualenv managed by [uv](https://github.com/astral-sh/uv).
+Labs 3 onward have a `pyproject.toml`. All labs share a single virtualenv managed by [uv](https://github.com/astral-sh/uv).
 
 ```bash
 # Install deps (run once per lab)
@@ -55,8 +56,15 @@ Labs 1 and 2 have no `pyproject.toml` — run tests directly:
 
 ```bash
 cd conductor/sprint-01-eval-bootstrap
-python -m pytest src/test_sprint_00.py -v
+python -m pytest src/ -v
+
+cd conductor/sprint-02-harness-tool-design
+python -m pytest src/ -v
 ```
+
+## CI
+
+The repo includes a `workflow_dispatch` eval quality gate (`.github/workflows/agent-eval.yml`). It runs unit tests on every trigger and gates on eval pass rate when `ANTHROPIC_API_KEY` and `LLM_GATEWAY_URL` secrets are configured. Introduced in Lab 5a.
 
 ## Environment variables
 
