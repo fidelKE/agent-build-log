@@ -19,7 +19,13 @@ Conductor is a technical co-pilot for data integration with four capability mode
 
 | Lab | Title | Blog post |
 |-----|-------|-----------|
-| 1 | Eval-first: 40 test cases before any agent code | [Read](https://agentbuildlog.hashnode.dev/eval-first-40-test-cases-before-agent-code) |
+| - | I've Built AI Agents. Now I'm Learning to Build Them Properly - From the Ground Up. | [Read](https://agentbuildlog.hashnode.dev/building-ai-agents-properly-from-the-ground-up) |
+| 1 | I Wrote 40 Test Cases Before Writing Any Agent Code. Here's What Happened. | [Read](https://agentbuildlog.hashnode.dev/eval-first-40-test-cases-before-agent-code) |
+| 2 | The Model Is Not the Agent: My First Harness PoC | [Read](https://agentbuildlog.hashnode.dev/model-is-not-the-agent-first-harness-poc) |
+| 3 | The Prompt Is a Specification. The Trace Is the Audit Log. | [Read](https://agentbuildlog.hashnode.dev/prompt-is-a-specification-trace-is-audit-log) |
+| 4 | The Agent Can't Leak What It Never Had: Secrets and Storage | [Read](https://agentbuildlog.hashnode.dev/agent-cant-leak-what-it-never-had-secrets-storage) |
+| 5 | Memory Without Measurement Is Guesswork | [Read](https://agentbuildlog.hashnode.dev/memory-without-measurement-is-guesswork) |
+| 5a | The Eval Gate: Gating Prompt Changes Like You Gate Code Changes | [Read](https://agentbuildlog.hashnode.dev/eval-gate-gating-prompt-changes-like-code-changes) |
 
 ## Structure
 

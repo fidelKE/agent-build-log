@@ -17,3 +17,6 @@ repos/mem0/
 sprint-*/results/
 evals/reports/
 
+# Runtime logs
+logs/
+
