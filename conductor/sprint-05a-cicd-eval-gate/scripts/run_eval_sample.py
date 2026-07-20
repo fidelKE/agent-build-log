@@ -10,14 +10,14 @@ Dataset path is always a CLI argument — never hardcoded (RULE-EVL01).
 
 Usage:
     UV_PROJECT_ENVIRONMENT=../.venv uv run python scripts/run_eval_sample.py \\
-        --dataset ../../evals/datasets/conductor-v2.yaml \\
+        --dataset ../evals/datasets/conductor-v2.yaml \\
         --sample 15 \\
         --output results/sample-run.json \\
         --memory-provider inmemory
 
     # Run all cases (full suite mode)
     UV_PROJECT_ENVIRONMENT=../.venv uv run python scripts/run_eval_sample.py \\
-        --dataset ../../evals/datasets/conductor-v2.yaml \\
+        --dataset ../evals/datasets/conductor-v2.yaml \\
         --output results/full-run.json \\
         --memory-provider inmemory
 """

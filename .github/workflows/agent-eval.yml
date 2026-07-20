@@ -64,7 +64,7 @@ jobs:
           LLM_GATEWAY_URL: ${{ secrets.LLM_GATEWAY_URL }}
         run: |
           UV_PROJECT_ENVIRONMENT=../.venv uv run python scripts/run_eval_sample.py \
-            --dataset ../../evals/datasets/${{ github.event.inputs.dataset }} \
+            --dataset ../evals/datasets/${{ github.event.inputs.dataset }} \
             --sample ${{ github.event.inputs.sample_size }} \
             --output results/ci-sample.json \
             --memory-provider inmemory
