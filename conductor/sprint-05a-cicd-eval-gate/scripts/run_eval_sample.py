@@ -135,7 +135,7 @@ def main() -> None:
     rc = _uv_run(
         [
             "python", "-m", "eval.judge",
-            "--input", os.path.abspath(raw_output),
+            "--results", os.path.abspath(raw_output),
             "--output", os.path.abspath(str(output_path)),
         ],
         cwd=SPRINT_ROOT,
