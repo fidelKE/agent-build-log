@@ -271,6 +271,8 @@
 | 4 | MEM01, MEM02, MEM03, MEM04, MEM05, EVL01, EVL02, EVL03 | — | Sprint 4 `prompt.py`: user_id injected into system prompt (MEM05); `agent.py`: build_system_prompt(user_id) called per session, SYSTEM_PROMPT pre-build removed (P01/MEM05); `main.py`: --user-id arg added; `eval/runner.py`: user_id passed per case. Violations found during testing: `eval/runner.py` returned plain dict without Pydantic model (T01/T03) — fixed by adding `CaseResult` model; `eval/runner.py` read wrong OTel token field names producing zero token counts (EVL03) — fixed by reading `gen_ai.usage.input_tokens`. Root cause: compliance scan only covered `src/`, not `eval/`. Standards and phase-3 skill updated to require full scan of all sprint directories. |
 | 5a | CI01, CI02, CI03, CI04 | — | No violations. Float precision bug found and fixed in `regression_check.py` during tests: `0.89 - 0.86` evaluates to `-0.030000000000000002` in IEEE 754, causing the boundary case to fire incorrectly. Fixed with epsilon tolerance `delta < -(max_regression + 1e-9)`. |
 | 6 | SDK01, SDK02, SKL01, STM01 | A03 (disabled), A04 (disabled), P02 (disabled) | Violations found and fixed: (1) `run_loop.py` in `conductor/scripts/` imported `anthropic` with no `pyproject.toml` — fixed by creating `conductor/scripts/pyproject.toml`. (2) O04: `_logging.getLogger(__name__).warning()` inside `_check_prompt_hash()` — fixed by returning warning string and logging via `structured_logger._write()` after it is initialized. (3) O02: five tools (`notes_search`, `search_knowledge_base`, `search_memory`, `add_memory`, `delete_memory`) had no PostToolUse logger — fixed by adding `post_tool_log_hook` with empty matcher (allowed per RULE-SDK02 Exception). Rules A03, A04, P02 disabled from sprint-6 (SDK handles these concerns internally). O01, STO01, STO03 carry SDK-scope notes acknowledging mechanism changes. |
+| 6a | LG01, LG02, LG03 | — | SDK01 scoped to sprint-6 only (LangGraph replaces the SDK harness). STM01 enforcement mechanism moved from PreToolUse hook to `pre_tool_check` node — contract (out-of-sequence blocked deterministically) unchanged. |
+| 6b | DA01, DA02, DA03 | — | [post-build scan results TBD] |
 
 ---
 
@@ -314,6 +316,7 @@
 - **Requirement:** The agent loop must use `ClaudeSDKClient` with `ClaudeAgentOptions`. `allowed_tools` must be an explicit positive allowlist of every tool the agent may call — anything not listed is denied at the harness level. `permission_mode` must be set explicitly (omitting it defaults to interactive, which blocks headless operation). `setting_sources` must be set explicitly when skills are expected to load.
 - **Violation:** Custom `while True` loop over `client.messages.create()` in sprint 6+; `ClaudeAgentOptions` with no `permission_mode` in a headless context; `allowed_tools` omitted (all tools allowed — security violation); `setting_sources` omitted when skills are expected to fire.
 - **Applies to:** `src/agent.py` from sprint 6 onward.
+- **Scope note (sprint-6a+):** Sprint 6a replaces `ClaudeSDKClient` with a LangGraph `CompiledGraph`. The ClaudeSDKClient harness requirement does not apply to sprint-6a or later framework-ported sprints. The tool allowlist, session isolation, and headless-operation requirements are fulfilled via LangGraph's `ToolNode` tool binding + `interrupt()` HITL gate in sprint-6a.
 
 ### RULE-SDK02
 - **Sprint introduced:** 6
@@ -344,3 +347,57 @@
 - **Requirement:** Modes with a defined step sequence (currently: Setup mode — read_credentials → validate → write_config) must enforce the sequence in a `SetupStateMachine` class in code, not via prompt instructions. The state machine must be checked in a `PreToolUse` hook before every tool call. Write-step tools must be blocked if the validate step has not completed. A prompt injection that asks to skip the sequence must be rejected by the hook, not the model.
 - **Violation:** Setup mode sequence enforced via system prompt instruction only; write-step tool callable without prior validate completion; state machine check absent from `PreToolUse` hook; sequence state stored only in conversation history (model-only, not enforced in code).
 - **Applies to:** `src/state.py`, `src/agent.py` from sprint 6 onward.
+- **Sprint-6a note:** In LangGraph harnesses, the `SetupStateMachine.is_allowed()` check moves from a `PreToolUse` hook to the `pre_tool_check` node. The enforcement contract (out-of-sequence calls are blocked deterministically in code, not via prompt) remains the same.
+
+---
+
+## Category: LangGraph (LG)
+
+### RULE-LG01
+- **Sprint introduced:** 6a
+- **Status:** active
+- **Requirement:** All session state flowing through a LangGraph graph must be declared in a `TypedDict` (the graph's state schema). No mutable variables in agent scope outside the state dict may carry session state. Nodes receive the current state and return a dict of updates — never mutate external variables as a side-channel.
+- **Violation:** Session-level variable (message list, iteration count, HITL flag, SM state) stored in a Python variable outside the `TypedDict`; node that mutates an outer-scope variable rather than returning a state update.
+- **Applies to:** `src/graph.py`, `src/agent.py` from sprint-6a onward.
+
+### RULE-LG02
+- **Sprint introduced:** 6a
+- **Status:** active
+- **Requirement:** Every LangGraph graph invocation must use a SQLite checkpointer and a unique `thread_id` per user session. Concurrent `thread_id`s must never share state — each `thread_id` is a completely independent checkpoint namespace. The `thread_id` must originate from the session context (session_id), not from a hardcoded value or global counter.
+- **Violation:** Graph invoked without a checkpointer; graph invoked without a `thread_id` in the config; two sessions sharing a `thread_id`; `thread_id` hardcoded or reused across sessions.
+- **Applies to:** `src/graph.py`, `src/agent.py` from sprint-6a onward.
+
+### RULE-LG03
+- **Sprint introduced:** 6a
+- **Status:** active
+- **Requirement:** The iteration cap (`MAX_TURNS`) must be enforced via an `iteration_count` field in the typed state dict and a conditional edge that routes to an error node when the count reaches the limit. No while loop or external counter may substitute for this. When the limit is reached, the graph must set a `limit_reached` status in state and route to the error node — it must never run an extra LLM call.
+- **Violation:** `MAX_TURNS` enforced via a `while` loop or external variable outside the state dict; limit reached but graph calls the LLM one more time before routing to error; error node absent (limit silently stops the graph with no status).
+- **Applies to:** `src/graph.py` from sprint-6a onward.
+
+---
+
+## Category: Deep Agents (DA)
+
+### RULE-DA01
+- **Sprint introduced:** 6b
+- **Status:** active
+- **Requirement:** The agent harness must use `create_deep_agent()` with an explicit `model=`, `system_prompt=` (loaded from `soul.md`), and `tools=` allowlist. The `tools=` list must be a positive allowlist — anything not listed must not be callable. Built-in tools that are not needed for Conductor must be disabled via `disable_default_tools=`.
+- **Violation:** `create_deep_agent()` called without `model=` (falls back to hardcoded default); `tools=` omitted (all custom tools implicitly allowed — security gap); soul.md content hardcoded inline rather than loaded from file.
+- **Applies to:** `src/agent.py` in sprint-6b.
+
+### RULE-DA02
+- **Sprint introduced:** 6b
+- **Status:** active
+- **Requirement:** Safety constraints that must hold 100% of the time (SetupStateMachine sequence enforcement per RULE-STM01) must be implemented via `wrap_tool_call` middleware, not via prompt instructions. The middleware must inspect the tool name and current state before calling `next(call)`, and return an error response without calling `next(call)` when the constraint is violated.
+- **Violation:** Setup mode sequence enforced only via system prompt; `wrap_tool_call` middleware absent; state machine check not performed before `next(call)`.
+- **Applies to:** `src/agent.py` in sprint-6b (middleware classes).
+- **Note:** This is the sprint-6b mechanism equivalent for RULE-STM01 (sprint-6: PreToolUse hook; sprint-6a: pre_tool_check node; sprint-6b: wrap_tool_call middleware).
+
+### RULE-DA03
+- **Sprint introduced:** 6b
+- **Status:** active
+- **Requirement:** Token cost per query type (Setup vs Troubleshooting) must be measured and logged. Deep Agents does not expose per-call token counts in the same way as the raw SDK — the run must capture total input tokens from the final state messages and log them via `StructuredLogger` at run end.
+- **Violation:** Run completes with no token log entry; token log entry missing query type label; token counts not compared against the Lab 5 baseline in `results.md`.
+- **Applies to:** `src/agent.py` in sprint-6b.
+
+---
