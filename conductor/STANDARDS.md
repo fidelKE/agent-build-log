@@ -376,28 +376,39 @@
 
 ---
 
+## Category: LangChain create_agent (LC)
+
+### RULE-LC01
+- **Sprint introduced:** 6b
+- **Status:** active
+- **Requirement:** The agent harness must use `create_agent()` with an explicit `model=`, `system_prompt=` (loaded from `soul.md`), `tools=` allowlist, and `checkpointer=`. The `tools=` list must be a positive allowlist — anything not listed must not be callable.
+- **Violation:** `create_agent()` called without `model=`; `tools=` omitted; `soul.md` content hardcoded inline rather than loaded from file; `checkpointer=` omitted (breaks HITL and session continuity).
+- **Applies to:** `src/agent.py` in sprint-6b.
+
+### RULE-LC02
+- **Sprint introduced:** 6b
+- **Status:** active
+- **Requirement:** Safety constraints that must hold 100% of the time (SetupStateMachine sequence enforcement per RULE-STM01) must be implemented via a `@wrap_tool_call` middleware function, not via prompt instructions. The middleware must inspect the tool name and current `stm_state` from `runtime.context` before calling `handler(request)`, and return a `ToolMessage` error (from `langchain_core.messages`) without calling `handler` when the constraint is violated.
+- **Violation:** Setup mode sequence enforced only via system prompt; `@wrap_tool_call` middleware absent; state machine check not performed before `handler(request)`.
+- **Applies to:** `src/agent.py` in sprint-6b.
+- **Note:** This is the sprint-6b mechanism equivalent for RULE-STM01 (sprint-6: PreToolUse hook; sprint-6a: pre_tool_check node; sprint-6b: @wrap_tool_call middleware).
+
+### RULE-LC03
+- **Sprint introduced:** 6b
+- **Status:** active
+- **Requirement:** Token cost per query type (Setup vs Troubleshooting) must be measured and logged. `create_agent()` exposes token counts via `usage_metadata` on the final AIMessage — the run must capture input + output tokens from the last message and log them via `StructuredLogger` at run end, labelled with query type.
+- **Violation:** Run completes with no token log entry; token log entry missing query type label; token counts not compared against the Lab 6a baseline in `results.md`.
+- **Applies to:** `src/agent.py` in sprint-6b.
+
+---
+
 ## Category: Deep Agents (DA)
 
 ### RULE-DA01
-- **Sprint introduced:** 6b
+- **Sprint introduced:** 6c
 - **Status:** active
 - **Requirement:** The agent harness must use `create_deep_agent()` with an explicit `model=`, `system_prompt=` (loaded from `soul.md`), and `tools=` allowlist. The `tools=` list must be a positive allowlist — anything not listed must not be callable. Built-in tools that are not needed for Conductor must be disabled via `disable_default_tools=`.
 - **Violation:** `create_deep_agent()` called without `model=` (falls back to hardcoded default); `tools=` omitted (all custom tools implicitly allowed — security gap); soul.md content hardcoded inline rather than loaded from file.
-- **Applies to:** `src/agent.py` in sprint-6b.
-
-### RULE-DA02
-- **Sprint introduced:** 6b
-- **Status:** active
-- **Requirement:** Safety constraints that must hold 100% of the time (SetupStateMachine sequence enforcement per RULE-STM01) must be implemented via `wrap_tool_call` middleware, not via prompt instructions. The middleware must inspect the tool name and current state before calling `next(call)`, and return an error response without calling `next(call)` when the constraint is violated.
-- **Violation:** Setup mode sequence enforced only via system prompt; `wrap_tool_call` middleware absent; state machine check not performed before `next(call)`.
-- **Applies to:** `src/agent.py` in sprint-6b (middleware classes).
-- **Note:** This is the sprint-6b mechanism equivalent for RULE-STM01 (sprint-6: PreToolUse hook; sprint-6a: pre_tool_check node; sprint-6b: wrap_tool_call middleware).
-
-### RULE-DA03
-- **Sprint introduced:** 6b
-- **Status:** active
-- **Requirement:** Token cost per query type (Setup vs Troubleshooting) must be measured and logged. Deep Agents does not expose per-call token counts in the same way as the raw SDK — the run must capture total input tokens from the final state messages and log them via `StructuredLogger` at run end.
-- **Violation:** Run completes with no token log entry; token log entry missing query type label; token counts not compared against the Lab 5 baseline in `results.md`.
-- **Applies to:** `src/agent.py` in sprint-6b.
+- **Applies to:** `src/agent.py` in sprint-6c.
 
 ---

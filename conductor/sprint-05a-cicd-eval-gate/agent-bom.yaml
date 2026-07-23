@@ -1,0 +1,61 @@
+# Agent Bill of Materials (ABOM) for Conductor Sprint 5a
+# Sprint 5a scope: CI/CD eval gate (cumulative: includes supply chain security from Sprint 4 §59)
+#
+# Registers the hashes of all pipeline components. bom_validator.py reads this
+# file and exits non-zero if any component has drifted since the ABOM was last
+# generated. This is the prompt-hash-drift detection layer: a rotated credential
+# is useless if the system prompt has been silently modified.
+
+schema_version: "1.0"
+
+model:
+  id: claude-haiku-4-5-20251001
+  provider: anthropic
+  pinned: true
+
+prompt:
+  file: src/soul.md
+  sha256: 39bffa0030dbff836ef97eee2838e5fe5f260aa5c61b5abe94601d6e6ca4e283
+
+tools:
+  - name: __init__.py
+    file: src/__init__.py
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - name: agent.py
+    file: src/agent.py
+    sha256: 075ed2f07c540a2285e2258193a31aa2ccb535e93cf963a373ef40aff22687a1
+  - name: logger.py
+    file: src/logger.py
+    sha256: fbe97b4aae9dbaa50d2f675206482477992f53375ac7b32a37f54eaaccf0a1cc
+  - name: main.py
+    file: src/main.py
+    sha256: 367d72479cb7a08e891d65d11046b35e6880bdb9d046e5a9440101d534b8dc8c
+  - name: memory.py
+    file: src/memory.py
+    sha256: 2382ed1674df897cdcfd8310cce259c69b6866566681da459b6d3d29c1229165
+  - name: prompt.py
+    file: src/prompt.py
+    sha256: 7a1c3a7e088e4fb63b7c11fe8c97c0ecafba1ce8b4aab4355148eadf515a46d6
+  - name: run_viewer.py
+    file: src/run_viewer.py
+    sha256: c7c3f6d7feb82f296497fd03ec3fb8a0e2316c4cdc8cbf0e29c8c137a6484875
+  - name: secrets.py
+    file: src/secrets.py
+    sha256: 6ffc3c599f362b6ca852769c27c5dece664627988b55399f8d86db34f57c12bf
+  - name: state.py
+    file: src/state.py
+    sha256: d1ea6791ec9f1263136120cf75ad47c91c15d0da7dd92fdfae5da2c6853e1f96
+  - name: tools.py
+    file: src/tools.py
+    sha256: 62152a0392371c9dc7b9db7cde8be6ef219d272f1c4d070b2fa02c2dbea4f013
+
+secrets_store:
+  type: vault-kv-v2
+  version: "1.17"
+  dev_mode: true
+
+eval_dataset:
+  file: ../evals/datasets/conductor-v2.yaml
+  sha256: b21e8d2dd93e127922c706d9c2a4f6060a85986611ee64e5d4e5f74df451b086
+
+judge_models: []

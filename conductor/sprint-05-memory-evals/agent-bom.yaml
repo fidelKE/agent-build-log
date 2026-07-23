@@ -42,7 +42,7 @@ secrets_store:
   dev_mode: true
 
 eval_dataset:
-  file: ../../evals/datasets/conductor-v1-approved.yaml
+  file: ../evals/datasets/conductor-v1-approved.yaml
   sha256: a561bc0aeedcebe633f7f13b39334be3ae717667ebfd862e3f3a79b9fffb3706
 
 judge_models:
