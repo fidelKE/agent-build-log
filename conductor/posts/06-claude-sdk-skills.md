@@ -230,11 +230,8 @@ The `description:` field in SKILL.md frontmatter has two constraints that matter
 The 457-char description for `conductor-troubleshoot-connector` satisfies both constraints. More
 importantly, it was written to satisfy them intentionally - not trimmed down after the fact.
 
-Research finding worth knowing: **human-curated descriptions outperform model-generated ones by
-+16.6 percentage points.** Model-generated descriptions actually hurt trigger rate (-8 to -11 pp).
-The model is good at following skill instructions. It is not good at writing skill descriptions
-that reliably trigger on the right queries. That job belongs to the engineer who understands the
-query distribution.
+The [SkillsBench benchmark](https://arxiv.org/abs/2602.12670) measured what happens when you compare three conditions: no Skills, curated human-authored Skills, and model-self-generated Skills. **Curated Skills raised task pass rate by +16.6 pp over no Skills.** Model-generated Skill packs fell *below* the no-Skills baseline (-8 to -11 pp) - the packs went unused, caused solver interference, or locked in wrong assumptions.
+The model is good at following a Skill. It is not good at writing one. That job belongs to the engineer who understands the task distribution.
 
 ---
 
