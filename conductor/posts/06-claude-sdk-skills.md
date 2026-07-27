@@ -38,7 +38,7 @@ machine for Setup mode - would produce an agent that can't take unsafe actions e
 is prompted to. Not "usually won't." Can't.
 
 And a secondary question: can a skill description short enough to work across all major providers
-(≤500 chars) still trigger reliably on the right queries?
+(~500 chars, the cross-provider practical ceiling) still trigger reliably on the right queries?
 
 ---
 
@@ -209,8 +209,7 @@ description: |
   HTTP connectors. Do not use for setup or onboarding requests.
 ```
 
-457 characters. Under the 500-char cross-provider limit. Under the 1,536-char Claude Code hard
-limit with room to spare.
+457 characters. Under the 1,536-char Claude Code hard limit with room to spare.
 
 The short description is deliberate. The body of the skill - the full troubleshooting protocol,
 error pattern table, escalation criteria - loads into context only when the skill triggers, via
@@ -223,9 +222,7 @@ The `description:` field in SKILL.md frontmatter has two constraints that matter
 
 - **1,536 chars (Claude Code hard limit):** The field is truncated before the trigger decision.
   Anything past 1,536 chars is invisible to the model at trigger time.
-- **≤500 chars (cross-provider rule):** Gemini truncates skill descriptions at roughly 500 chars.
-  The Deep Agents port will compare trigger rates across Claude, OpenAI, and Gemini on the same skill. A fair
-  comparison requires a description that all three providers can read in full.
+- **~500 chars (cross-provider practical ceiling):** No provider publishes a hard character limit on tool descriptions. In practice, keeping descriptions under ~500 chars ensures the full text is readable across Claude, OpenAI, and Gemini without relying on undocumented behavior. The Deep Agents port will compare trigger rates across all three on the same skill - a fair comparison requires a description all three providers can read in full.
 
 The 457-char description for `conductor-troubleshoot-connector` satisfies both constraints. More
 importantly, it was written to satisfy them intentionally - not trimmed down after the fact.
