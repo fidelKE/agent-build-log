@@ -27,6 +27,7 @@ Conductor is a technical co-pilot for data integration with four capability mode
 | 5 | Memory Without Measurement Is Guesswork | [Read](https://agentbuildlog.hashnode.dev/memory-without-measurement-is-guesswork) |
 | 5a | The Eval Gate: Gating Prompt Changes Like You Gate Code Changes | [Read](https://agentbuildlog.hashnode.dev/eval-gate-gating-prompt-changes-like-code-changes) |
 | 6 | Skills, Hooks, and a State Machine: What It Takes to Trust an Agent | [Read](https://agentbuildlog.hashnode.dev/skills-hooks-state-machine-what-it-takes-to-trust-an-agent) |
+| 6a | LangGraph: What You Get When You Own the Graph | [Read](https://agentbuildlog.hashnode.dev/langgraph-what-you-get-when-you-own-the-graph) |
 
 ## Structure
 
