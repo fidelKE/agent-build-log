@@ -1,6 +1,6 @@
 ---
 title: "Between Drawing the Graph and Hiding It: What LangChain's Middle Tier Costs"
-subtitle: "I ported Conductor to create_agent() - the LangChain middle tier between LangGraph and Deep Agents. Graph.py is gone, 226 lines deleted, and three hand-rolled loop controls replaced by OOTB middleware. Here is what stays custom."
+subtitle: "LangGraph gives you full control. Deep Agents hide the loop entirely. create_agent() sits between them - 226 lines of graph wiring deleted, three hand-rolled loop controls replaced by middleware. Here is what you keep, what you give up, and what stays custom."
 slug: between-drawing-the-graph-and-hiding-it-langchain-create-agent
 tags:
   - ai-agents
@@ -176,16 +176,6 @@ ImportError: cannot import name 'ToolCallResponse' from 'langchain.agents'
 The correct return type is `ToolMessage` from `langchain_core.messages`. The correct dispatch method is `handler(request)`, not `call_next(request)`. Found before any test ran - caught by the import and confirmed by grepping the installed package.
 
 The fix was a one-line import swap. The consequence was updating RULE-LC02 in the standards file to reference the correct type so the Deep Agents port doesn't rediscover the same gap.
-
-### pytest resolved src.agent from the wrong sprint
-
-The shared `.venv` at `conductor/.venv` made pytest's `sys.path` ambiguous. Running `pytest tests/ -v` inside the sprint directory imported `src.agent` from an earlier sprint's directory, not the current one. The test suite failed with:
-
-```
-ImportError: cannot import name 'ConductorContext' from 'src.agent'
-```
-
-Fix: `pythonpath = ["."]` in `[tool.pytest.ini_options]` in `pyproject.toml`. One line, resolves `src.agent` to `./src/agent.py` first. All 28 tests pass after the fix.
 
 ---
 
