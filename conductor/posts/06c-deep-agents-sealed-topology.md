@@ -15,7 +15,7 @@ seriesName: "Agent Build Log"
 
 # Same Conductor, Sealed Topology: What You Give Up With Deep Agents
 
-> **TL;DR:** The previous lab (LangChain `create_agent()`) already hid the loop. `create_deep_agent()` goes further - it seals the topology. Moving from LangChain `create_agent()` to `create_deep_agent()` cuts harness boilerplate by 4% - LangChain already captured most of the gain from dropping `graph.py` (35% vs. LangGraph). Three hand-rolled patterns (memory loading, step cap, skills wiring) were replaced by prebuilts. Three structural guarantees weakened: conditional routing moved from graph edges to model reasoning, HITL dropped from node-level to tool-level control, and the state machine lost its place in the graph checkpoint. None of these are framework bugs - they are the correct Deep Agents approach to each problem, and each comes with a lower structural guarantee than the LangGraph equivalent. Every gap traces back to the same root cause: the framework owns the topology. Here is what that looks like when you port a real agent.
+> **TL;DR:** The previous lab (LangChain `create_agent()`) already hid the loop. `create_deep_agent()` goes further - it seals the topology. Moving from LangChain `create_agent()` to `create_deep_agent()` cuts harness boilerplate by 4% - LangChain already captured most of the gain from dropping `graph.py` (35% vs. LangGraph). Three hand-rolled patterns (memory loading, step cap, skills wiring) were replaced by prebuilts. Three structural guarantees weakened: conditional routing moved from graph edges to model reasoning, HITL dropped from node-level to tool-level control, and the state machine lost its place in the graph checkpoint. None of these are framework bugs - they are the correct Deep Agents approach to each problem, and each comes with a lower structural guarantee than LangGraph. All three were already present in LangChain. Deep Agents inherits them. Every gap traces back to the same root cause: the framework owns the topology. Here is what that looks like when you port a real agent.
 
 ---
 
@@ -25,7 +25,7 @@ The previous three ports built the same agent three different ways. The Claude A
 
 Deep Agents is the next step in that progression. `create_deep_agent()` wraps LangGraph behind a single factory function, provides a prebuilt middleware catalogue, and - crucially - compiles and seals the graph topology before returning it. The difference from `create_agent()` is not the loop being hidden. That was already true. The difference is that the graph is no longer accessible at all.
 
-The hypothesis: the topology seal will save lines but introduce at least one concrete ceiling - a Conductor behavior where the Deep Agents approach gives a weaker structural guarantee than the LangGraph equivalent.
+The hypothesis: going one step further than LangChain `create_agent()` will save some lines, and the ceilings LangChain already introduced will carry over - but sealing the topology entirely may add new ones on top.
 
 ## Why This Matters
 
@@ -66,7 +66,7 @@ flowchart TD
     LLM -- done --> ANS[Final answer]
 ```
 
-One thing the diagram does not show: `graph.py` from the LangGraph port is gone. The framework owns everything between the model call and the tool execution.
+What is not in this diagram - and not in the file listing either - is `graph.py`. In the LangGraph port that was 328 lines of explicit node and edge definitions. Here it does not exist. The framework owns that layer.
 
 ---
 
@@ -82,7 +82,7 @@ LangChain `create_agent()` does not expose `add_conditional_edges()` either - it
 
 In Deep Agents, conditional routing is replaced by system prompt injection: mode is passed as a block inside the system prompt at run time. The agent reads the mode block and adjusts its behavior accordingly. This is the correct Deep Agents approach - there is no other option when the topology is fixed. But the structural guarantee is weaker. With graph edges, mode was a hard constraint enforced before the model ran. With prompt injection, mode is a soft constraint: the agent reasons its way into the right behavior on every call. For Conductor's current needs this is sufficient. For an agent that needs mode-specific tools, different memory scopes per mode, or behavior the model should not be able to override, the gap is real.
 
-**Verdict: topology ceiling.** The correct Deep Agents approach (prompt injection) provides a lower structural guarantee than LangGraph's conditional edges.
+**Verdict: topology ceiling, shared with LangChain.** LangChain `create_agent()` already used system prompt injection for routing - this ceiling was present in Lab 6b. Deep Agents inherits it unchanged.
 
 **Why not just use dedicated agents per mode instead?** The more principled design is a router that dispatches to a SetupAgent, TroubleshootAgent, QAAgent, and OnboardingAgent - each with only the tools it needs, HITL only where it applies, the state machine only in Setup. With that architecture the model cannot accidentally call `write_connector_config` during troubleshooting because the tool simply does not exist in that agent. Prompt injection is the wrong enforcement mechanism for invariants.
 
@@ -145,7 +145,7 @@ sm_middleware = SetupStateMiddleware(sm, structured_logger)
 # sm is external mutable state - not graph state, not serialized between sessions
 ```
 
-The enforcement behavior is identical: out-of-sequence tool calls are blocked. What changes is observability. In the LangGraph port the state machine's current state was part of the graph's checkpoint record - it persisted across sessions automatically. In the Deep Agents port it lives in a Python object that does not survive between runs. The `sm_state` field in each `tool_call` log event captures the current state at dispatch time, but reconstructing the full transition history across sessions requires reading through the JSONL log rather than querying the checkpoint.
+The enforcement behavior is identical: out-of-sequence tool calls are blocked. What changes is observability. In the LangGraph port the state machine's current state was part of the graph's checkpoint record - it persisted across sessions automatically. LangChain `create_agent()` already lost this: the external container pattern introduced in Lab 6b has the same limitation. In the Deep Agents port it still lives in a Python object that does not survive between runs. The `sm_state` field in each `tool_call` log event captures the current state at dispatch time, but reconstructing the full transition history across sessions requires reading through the JSONL log rather than querying the checkpoint.
 
 For a connector setup flow that spans multiple sessions (common in practice), this means the state machine resets on every new run. The log is the only audit trail.
 
