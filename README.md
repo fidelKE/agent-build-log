@@ -29,6 +29,7 @@ Conductor is a technical co-pilot for data integration with four capability mode
 | 6 | Skills, Hooks, and a State Machine: What It Takes to Trust an Agent | [Read](https://agentbuildlog.hashnode.dev/skills-hooks-state-machine-what-it-takes-to-trust-an-agent) |
 | 6a | LangGraph: What You Get When You Own the Graph | [Read](https://agentbuildlog.hashnode.dev/langgraph-what-you-get-when-you-own-the-graph) |
 | 6b | Between Drawing the Graph and Hiding It: What LangChain's Middle Tier Costs | [Read](https://agentbuildlog.hashnode.dev/between-drawing-the-graph-and-hiding-it-langchain-create-agent) |
+| 6c | Same Conductor, Sealed Topology: What You Give Up With Deep Agents | [Read](https://agentbuildlog.hashnode.dev/same-conductor-sealed-topology-what-you-give-up-with-deep-agents) |
 
 ## Structure
 
