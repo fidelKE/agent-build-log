@@ -178,13 +178,13 @@ middleware = SkillsMiddleware(
 
 The behavior is better than expected. `SkillsMiddleware` does not inject the full SKILL.md body at session start - it injects skill name and description (metadata) only. The agent calls `read_file` on the skill path when it decides a skill applies. Zero bulk startup token cost.
 
-The contrast across the four ports is now sharper:
-- Claude Agent SDK: `--skill` flag, full body injected, explicit documentation
-- LangGraph: `load_skill @tool`, full body read on demand by the agent
+The contrast across the four ports is now clearer:
+- Claude Agent SDK: Skills API, description always in context, full body loads when invoked
+- LangGraph: `load_skill @tool`, agent explicitly calls the tool to retrieve the full body
 - LangChain `create_agent()`: `load_skill @tool`, same pattern as LangGraph (carried forward unchanged)
-- Deep Agents: `SkillsMiddleware`, metadata only upfront, body on demand via `read_file`
+- Deep Agents: `SkillsMiddleware`, description injected upfront, full body on demand via `read_file`
 
-Deep Agents' skills approach is the most token-efficient of the four. That was a surprise.
+All four use progressive disclosure - none inject the full body at startup. The mechanisms differ: the Skills API handles the trigger automatically for the SDK; LangGraph and LangChain require the agent to call an explicit tool; Deep Agents routes the body read through middleware. The token cost behavior is the same class across all four.
 
 ---
 
@@ -193,7 +193,7 @@ Deep Agents' skills approach is the most token-efficient of the four. That was a
 | Concern | Claude Agent SDK | LangGraph | LangChain `create_agent()` | Deep Agents |
 |---------|-------------------|--------------------|--------------------------|---------------------|
 | Agent harness | `agent.py`: 397 lines | `agent.py` 322 + `graph.py` 328 = 650 | `agent.py`: 442 lines (no `graph.py`) | `agent.py`: 426 lines (no `graph.py`) |
-| Skills wiring | SDK `--skill` flag, full body injected | `load_skill @tool`, full body on demand | `load_skill @tool`, full body on demand (same as LangGraph) | `SkillsMiddleware` via `FilesystemBackend` - metadata upfront, body on demand |
+| Skills wiring | Skills API - description always in context, full body on invocation | `load_skill @tool`, full body on demand | `load_skill @tool`, full body on demand (same as LangGraph) | `SkillsMiddleware` via `FilesystemBackend` - description upfront, body on demand |
 | Memory loading | custom `before_agent` hook | custom `BeforeAgentMiddleware` | custom `BeforeAgentMiddleware` (carried forward) | `MemoryMiddleware` (prebuilt, cache-controlled) |
 | Step cap | RULE-AG02 custom counter | RULE-AG02 custom counter | `ModelCallLimitMiddleware(run_limit=8)` (prebuilt) | `ModelCallLimitMiddleware(run_limit=8)` (prebuilt) |
 | HITL | `PreToolUse` hook | `interrupt()` + graph edge | `HumanInTheLoopMiddleware(interrupt_on=...)` in middleware list | `interrupt_on=` + `checkpointer=` + `Command(resume=...)` |
@@ -219,7 +219,7 @@ The broader lesson: when an interrupt/resume pattern produces no output and no e
 
 The initial assumption was that `SkillsMiddleware` would inject the full `SKILL.md` body into the context at session start, making the token cost of sessions with skills active measurably higher. Reading the `token_cost` logs showed the input token count for sessions with skills active was nearly identical to sessions without - the difference was within noise.
 
-The framework injects skill name and description only. The agent reads the full body via `read_file` when it decides a skill applies. This is better behavior than the original assumption (zero bulk startup token cost), but it changed the basis of the skills comparison across the three ports. The difference between the LangGraph port's manual `load_skill` tool and Deep Agents native skills is deferred vs. deferred loading - both read on demand. The contrast is now with the Claude Agent SDK port, where the full body was injected at session start.
+The framework injects skill name and description only. The agent reads the full body via `read_file` when it decides a skill applies. This is better behavior than the original assumption (zero bulk startup token cost), but it changed the basis of the skills comparison. The Claude Agent SDK works the same way - the Skills API keeps description in context and loads the full body only on invocation. The difference between the LangGraph `load_skill` tool and Deep Agents native skills is mechanism, not behavior: both read the body on demand, one via an explicit tool call the agent decides to make, the other via middleware handling a `read_file` call.
 
 A meaningful trigger rate comparison across the three skills mechanisms requires a controlled setup with the same 20 queries run against each framework under identical conditions. That measurement is the experiment for the cross-provider skills lab later in this series, where all three mechanisms get a fair side-by-side with numbers. The qualitative finding here - that `SkillsMiddleware` progressive disclosure changes the token cost basis - is the input that framing will need.
 
