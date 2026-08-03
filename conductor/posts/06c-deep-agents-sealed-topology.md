@@ -1,6 +1,6 @@
 ---
 title: "Same Conductor, Sealed Topology: What You Give Up With Deep Agents"
-subtitle: "LangChain's create_agent() already hid the loop. create_deep_agent() goes further - it seals the topology. The harness shrank by 35%. Three structural guarantees weakened. Every one traces back to the same root cause."
+subtitle: "LangChain's create_agent() already hid the loop. create_deep_agent() goes further - it seals the topology. Moving from LangChain to Deep Agents saves 4% more boilerplate. Three structural guarantees weakened. Every one traces back to the same root cause."
 slug: same-conductor-sealed-topology-what-you-give-up-with-deep-agents
 tags:
   - ai-agents
@@ -15,7 +15,7 @@ seriesName: "Agent Build Log"
 
 # Same Conductor, Sealed Topology: What You Give Up With Deep Agents
 
-> **TL;DR:** The previous lab (LangChain `create_agent()`) already hid the loop. `create_deep_agent()` goes further - it seals the topology. Replacing a 328-line LangGraph graph with a single `create_deep_agent()` call cuts harness boilerplate by 35% vs. LangGraph (4% vs. LangChain). Three hand-rolled patterns (memory loading, step cap, skills wiring) were replaced by prebuilts. Three structural guarantees weakened: conditional routing moved from graph edges to model reasoning, HITL dropped from node-level to tool-level control, and the state machine lost its place in the graph checkpoint. None of these are framework bugs - they are the correct Deep Agents approach to each problem, and each comes with a lower structural guarantee than the LangGraph equivalent. Every gap traces back to the same root cause: the framework owns the topology. Here is what that looks like when you port a real agent.
+> **TL;DR:** The previous lab (LangChain `create_agent()`) already hid the loop. `create_deep_agent()` goes further - it seals the topology. Moving from LangChain `create_agent()` to `create_deep_agent()` cuts harness boilerplate by 4% - LangChain already captured most of the gain from dropping `graph.py` (35% vs. LangGraph). Three hand-rolled patterns (memory loading, step cap, skills wiring) were replaced by prebuilts. Three structural guarantees weakened: conditional routing moved from graph edges to model reasoning, HITL dropped from node-level to tool-level control, and the state machine lost its place in the graph checkpoint. None of these are framework bugs - they are the correct Deep Agents approach to each problem, and each comes with a lower structural guarantee than the LangGraph equivalent. Every gap traces back to the same root cause: the framework owns the topology. Here is what that looks like when you port a real agent.
 
 ---
 
