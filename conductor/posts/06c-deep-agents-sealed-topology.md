@@ -316,6 +316,12 @@ We ran the standard eval suite (conductor-v2.yaml, 39 cases, LLM-as-judge) consi
 
 ---
 
+## Code
+
+[conductor/sprint-06c-deep-agents](https://github.com/fidelKE/agent-build-log/tree/main/conductor/sprint-06c-deep-agents)
+
+---
+
 ## What's Next
 
 The next lab ports Conductor to Google ADK and runs a rigorous cross-provider comparison: custom harness, LangGraph, Deep Agents, and Google ADK side by side. Same agent, same skills. The goal is to identify which differences are framework-level choices and which are model-level behavior.
