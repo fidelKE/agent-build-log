@@ -1,0 +1,50 @@
+schema_version: "1.0"
+model:
+  id: claude-sonnet-4-5
+  provider: anthropic
+  pinned: true
+prompt:
+  file: src/SOUL.md
+  sha256: 39bffa0030dbff836ef97eee2838e5fe5f260aa5c61b5abe94601d6e6ca4e283
+tools:
+  - name: __init__.py
+    file: src/__init__.py
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - name: agent.py
+    file: src/agent.py
+    sha256: b0e2a05522c85a18eb6489ebea415e7fb3552782370e0e946d8d52fc23ffd378
+  - name: logger.py
+    file: src/logger.py
+    sha256: fbe97b4aae9dbaa50d2f675206482477992f53375ac7b32a37f54eaaccf0a1cc
+  - name: main.py
+    file: src/main.py
+    sha256: 13854b04651fe38916466dca2d1b86490f457c147ad91faa9942163c2b67ae66
+  - name: memory.py
+    file: src/memory.py
+    sha256: 3617da071e05e618221d0f4382653cd6669c889daae84406fb6920492421fc74
+  - name: prompt.py
+    file: src/prompt.py
+    sha256: 296231b55091d86d4779770d5f00204833266a86150fb772f6f12c9c2b63dd38
+  - name: secrets.py
+    file: src/secrets.py
+    sha256: 6ffc3c599f362b6ca852769c27c5dece664627988b55399f8d86db34f57c12bf
+  - name: skills.py
+    file: src/skills.py
+    sha256: 10ab7584f6cf570bcd8f1dca3133f950bb360656be92741366887780ba41bbd1
+  - name: state.py
+    file: src/state.py
+    sha256: 07da3f55de5e50321f3ea1aca7adfddbb893a70844cfa4c0d71aba64b17cae54
+  - name: tools.py
+    file: src/tools.py
+    sha256: 074ed6e0e92addc3bb11c6fe739146927ce7a7de381dbbb45a31f0163dd023c8
+  - name: AGENTS.md
+    file: src/AGENTS.md
+    sha256: f21525086514d13bb2cb97d9cd2f77b36ee2ca08a84a8dab084b8b6530537bca
+secrets_store:
+  type: vault-kv-v2
+  version: "1.17"
+  dev_mode: true
+eval_dataset:
+  file: ../evals/datasets/conductor-v2.yaml
+  sha256: b21e8d2dd93e127922c706d9c2a4f6060a85986611ee64e5d4e5f74df451b086
+judge_models: []
