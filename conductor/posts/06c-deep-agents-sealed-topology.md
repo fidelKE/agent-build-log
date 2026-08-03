@@ -322,4 +322,4 @@ The next lab ports Conductor to Google ADK and runs a rigorous cross-provider co
 
 ---
 
-You ported the agent, three hand-rolled controls mapped to prebuilt middleware, and the sealed topology was a non-issue - until HITL disappeared without error when the checkpointer was absent. At what point does the difference between prompt-injected routing and real graph control flow stop being theoretical, and what do you check first when a framework feature produces no output and no error?
+At what point would your agent need to own its own graph - and when you get there, how do you decide between LangGraph, LangChain, or Deep Agents?
