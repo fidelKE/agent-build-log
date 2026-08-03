@@ -273,6 +273,7 @@
 | 6 | SDK01, SDK02, SKL01, STM01 | A03 (disabled), A04 (disabled), P02 (disabled) | Violations found and fixed: (1) `run_loop.py` in `conductor/scripts/` imported `anthropic` with no `pyproject.toml` — fixed by creating `conductor/scripts/pyproject.toml`. (2) O04: `_logging.getLogger(__name__).warning()` inside `_check_prompt_hash()` — fixed by returning warning string and logging via `structured_logger._write()` after it is initialized. (3) O02: five tools (`notes_search`, `search_knowledge_base`, `search_memory`, `add_memory`, `delete_memory`) had no PostToolUse logger — fixed by adding `post_tool_log_hook` with empty matcher (allowed per RULE-SDK02 Exception). Rules A03, A04, P02 disabled from sprint-6 (SDK handles these concerns internally). O01, STO01, STO03 carry SDK-scope notes acknowledging mechanism changes. |
 | 6a | LG01, LG02, LG03 | — | SDK01 scoped to sprint-6 only (LangGraph replaces the SDK harness). STM01 enforcement mechanism moved from PreToolUse hook to `pre_tool_check` node — contract (out-of-sequence blocked deterministically) unchanged. |
 | 6b | DA01, DA02, DA03 | — | [post-build scan results TBD] |
+| 6d | ADK01, ADK02, ADK03 | STM01 (superseded by ADK03 for sprint-6d only) | No violations in sprint-6d's own code (Part A). Part B: ADK01–03 are Google-ADK-specific (`LlmAgent`/`before_tool_callback`/`Workflow`) and have no applicable surface in any prior sprint's Claude SDK/LangGraph/LangChain/Deep Agents code — N/A across sprints 1–6c. Pre-existing gap noticed but not fixed (out of this sprint's scope): `RULE-DA02`/`DA03`/`DA04` are referenced in sprint-6c code comments and results.md but were never formally added to this file's Deep Agents category — left as-is, same treatment sprint-6b's own `[post-build scan results TBD]` row already received. RULE-A01 (hard iteration cap) satisfied via `RunConfig(max_llm_calls=8)`, ADK's native primitive — `RunStatus.LIMIT_REACHED` added to `state.py`. Mid-build pivot: initial implementation used `SequentialAgent`/`ParallelAgent`; found live (checking the installed `google-adk==2.6.1` package directly, not the docs) that both are `@deprecated` in favor of a new `Workflow` graph engine, confirmed it's a real usable public API (not the internal-only surface the deprecation notice's wording suggested), and rewrote `workflow.py`/`agent.py` on `Workflow(edges=[...])` before this sprint shipped — ADK01/ADK03 text corrected in place rather than superseded, since the draft hadn't shipped yet. |
 
 ---
 
@@ -343,11 +344,12 @@
 
 ### RULE-STM01
 - **Sprint introduced:** 6
-- **Status:** active
+- **Status:** superseded by RULE-ADK03 for sprint-6d only (active for sprints 6–6c)
 - **Requirement:** Modes with a defined step sequence (currently: Setup mode — read_credentials → validate → write_config) must enforce the sequence in a `SetupStateMachine` class in code, not via prompt instructions. The state machine must be checked in a `PreToolUse` hook before every tool call. Write-step tools must be blocked if the validate step has not completed. A prompt injection that asks to skip the sequence must be rejected by the hook, not the model.
 - **Violation:** Setup mode sequence enforced via system prompt instruction only; write-step tool callable without prior validate completion; state machine check absent from `PreToolUse` hook; sequence state stored only in conversation history (model-only, not enforced in code).
-- **Applies to:** `src/state.py`, `src/agent.py` from sprint 6 onward.
+- **Applies to:** `src/state.py`, `src/agent.py` for sprints 6–6c.
 - **Sprint-6a note:** In LangGraph harnesses, the `SetupStateMachine.is_allowed()` check moves from a `PreToolUse` hook to the `pre_tool_check` node. The enforcement contract (out-of-sequence calls are blocked deterministically in code, not via prompt) remains the same.
+- **Sprint-6d note:** `SequentialAgent` (RULE-ADK03) makes write-before-validate architecturally impossible — `SetupConfigureAgent`'s `tools=` list does not contain `read_connector_config`/`validate_credentials`, so there is no code path that could call them out of order, not merely a runtime check that would deny it. This is a strictly stronger guarantee than a `SetupStateMachine` gate (which blocks a call the code could otherwise have made), so the software gate is redundant, not equivalent-but-relocated the way sprints 6a–6c's mechanism changes were. `SetupStateMachine` is intentionally left unwired in sprint-6d — see `src/state.py` module docstring and `src/workflow.py`.
 
 ---
 
@@ -410,5 +412,30 @@
 - **Requirement:** The agent harness must use `create_deep_agent()` with an explicit `model=`, `system_prompt=` (loaded from `soul.md`), and `tools=` allowlist. The `tools=` list must be a positive allowlist — anything not listed must not be callable. Built-in tools that are not needed for Conductor must be disabled via `disable_default_tools=`.
 - **Violation:** `create_deep_agent()` called without `model=` (falls back to hardcoded default); `tools=` omitted (all custom tools implicitly allowed — security gap); soul.md content hardcoded inline rather than loaded from file.
 - **Applies to:** `src/agent.py` in sprint-6c.
+
+---
+
+## Category: Google ADK (ADK)
+
+### RULE-ADK01
+- **Sprint introduced:** 6d
+- **Status:** active
+- **Requirement:** Every Conductor mode must use `LlmAgent` as the leaf-level agent unit. Structural control flow (sequential order, parallel fan-out) must be expressed via a graph wrapper — `google.adk.Workflow(edges=[...])` in this sprint (installed `google-adk==2.6.1` deprecates `SequentialAgent`/`ParallelAgent` in favor of this graph engine) — but the graph's nodes must themselves be `LlmAgent` instances. The wrapper is a structural container, never an execution unit itself.
+- **Violation:** A raw Python function or asyncio coroutine used as the agent loop without wrapping an `LlmAgent`; a `Workflow` graph (or `SequentialAgent`/`ParallelAgent`) instantiated with edge nodes that are not `LlmAgent` instances (or further graph wrappers that eventually bottom out in `LlmAgent`).
+- **Applies to:** `src/agent.py` and `src/workflow.py` in sprint-6d.
+
+### RULE-ADK02
+- **Sprint introduced:** 6d
+- **Status:** active
+- **Requirement:** Every `LlmAgent` instance must be instantiated with a `before_tool_callback=` wired. The callback must return `None` to allow tool execution and return a non-`None` dict to block it. All credential and path validation must happen inside the callback — not inside individual tool functions.
+- **Violation:** `LlmAgent` instantiated without `before_tool_callback=`; credential or path checks placed inside a tool function body instead of the callback; callback present but unconditionally returns `None` with no validation logic.
+- **Applies to:** `src/callback.py` and every `LlmAgent` construction in `src/agent.py` and `src/workflow.py` in sprint-6d.
+
+### RULE-ADK03
+- **Sprint introduced:** 6d
+- **Status:** active
+- **Requirement:** The Setup mode must use a graph wrapper (`google.adk.Workflow(edges=[...])` in this sprint) to enforce the step order (credential collection → validation → configuration → enable) architecturally. The step order must be enforced by the graph structure — verifiable directly on `workflow.graph.edges` — not by prompt instructions alone.
+- **Violation:** Setup mode implemented as a plain `LlmAgent` with step order enforced only via system prompt text; a graph wrapper used but nodes have no structural dependency (each could run independently in any order — e.g. all edges fan out from `START` with no chain between steps — the sequence is decorative, not enforced).
+- **Applies to:** `src/workflow.py` in sprint-6d.
 
 ---
