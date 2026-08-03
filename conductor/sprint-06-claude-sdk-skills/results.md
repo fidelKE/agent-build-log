@@ -151,3 +151,40 @@ they can't be imported and tested directly. The tests replicate the logic
 instead. If this causes drift in a later lab, extract the hook logic to
 module-level functions. Missing prerequisite for this change: a motivating
 divergence bug, not just tidiness.
+
+## Post-Publish Correction (found during Lab 6d's skills investigation)
+
+This lab was the only one of 6/6a/6b/6c/6d with its own local `.claude/skills/`
+copy instead of reading the shared root skill. Two compounding gaps caused the
+divergence:
+
+1. **No `cwd=` on `ClaudeAgentOptions`.** `setting_sources=["project"]` resolves
+   `.claude/skills/` relative to the SDK subprocess's working directory. Without
+   `cwd=`, that directory is wherever the process happens to run from - the lab
+   folder in every observed run - so a local skill copy was the only way to make
+   `setting_sources` find anything at all.
+2. **Missing shared `.env` fallback.** 6a/6b/6c/6d each call `load_dotenv()` twice
+   - once for a lab-local `.env` (never present), once for the shared
+   `conductor/.env` (`override=False` on both, so the first found wins). This
+   lab only had the first call, so it never picked up gateway credentials from
+   the shared file - a separate bug, but one that had to be fixed before a live
+   run could verify the skill-path fix at all.
+
+**Fixed:** added `_REPO_ROOT = Path(__file__).resolve().parents[3]` and
+`cwd=str(_REPO_ROOT)` to `ClaudeAgentOptions` in `agent.py`; added the second
+`load_dotenv()` call for `conductor/.env` matching the other four labs; deleted
+the redundant local `SKILL.md` (kept the historical `optimization-results.json`
+in place as a record); updated `SKILL_DIR` in `tests/test_sprint_06.py` to
+resolve to the shared root path; updated the `run_loop.py` example command in
+`README.md` to target the shared skill path.
+
+**Live-verified, not just unit-tested.** Ran two real queries (Snowflake
+timeout, BigQuery failure) against the gateway after both fixes. Trace logs
+confirm the `Skill` tool fires and the full prescribed diagnostic sequence
+executes correctly with the local copy deleted - the shared root file at
+`.claude/skills/conductor-troubleshoot-connector/` is now the only skill
+directory the SDK subprocess can reach. 38/38 tests pass after the fix.
+
+**Not revisited:** this lab's reported metrics (hook enforcement rates, SM
+violation counts) are unaffected by this change and left as originally
+recorded.

@@ -188,3 +188,28 @@ pytest now resolves `src.agent` to `./src/agent.py` (current sprint directory) f
 - Add `pythonpath = ["."]` to every sprint's pyproject.toml from the start. The shared
   `.venv` across sprints makes pytest resolution ambiguous without it. A one-line addition
   to the sprint template prevents the import confusion on every new sprint.
+
+## Post-Publish Correction (found during Lab 6d's skills investigation)
+
+`src/skills.py`'s `_SKILLS_ROOT` used `Path(__file__).resolve().parents[4]`, an
+off-by-one that resolved one directory level *above* this repo entirely, to a
+different, unrelated `.claude/skills/` directory that happened to exist on this
+machine. The correct depth is `parents[3]`. Same bug, same root cause, as Lab 6a
+(this lab's `skills.py` carried the pattern forward unchanged).
+
+**Failure mode was silent, not a crash.** `load_skill()`'s "not found" fallback
+returns a well-formed, non-empty string with no frontmatter - exactly what the
+existing tests (`test_load_skill_returns_string`, `test_load_skill_strips_frontmatter`)
+check for. `load_skill("conductor-troubleshoot-connector")` has been returning
+"Skill file not found: ..." instead of real troubleshooting instructions for
+this lab's entire lifetime.
+
+**Fixed:** path corrected to `parents[3]`; live-verified `load_skill` now returns
+the real SKILL.md body. Added the same two regression tests as Lab 6a:
+`test_skills_root_resolves_inside_this_repo` and
+`test_load_skill_returns_real_skill_content_not_a_not_found_error`. 33/33 tests
+passing after the fix.
+
+**Not revisited:** this lab's reported eval numbers are left as originally
+recorded - the adversarial cases don't exercise `load_skill` directly, and
+re-running the live eval is out of scope for a mechanical path correction.

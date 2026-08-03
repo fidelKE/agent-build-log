@@ -256,3 +256,40 @@ Fixed to `with open(prompt_file, "rb") as fh: ...`.
 | Eval pass rate valid | PASS | 56% adversarial (5/9); recorded baseline unchanged |
 | LinkedIn posts | PASS | POST 1-4 now present; POST 3 existed, POST 4 added |
 | Fixes applied | .env.example created; POST 4 added to linkedin/06c-deep-agents.txt |
+
+## Post-Publish Correction (found during Lab 6d's skills investigation)
+
+Same root cause as Labs 6a and 6b, different symptom because this lab binds a
+middleware instead of a tool function. `src/skills.py`'s `_SKILLS_ROOT` used
+`Path(__file__).resolve().parents[4]`, an off-by-one that resolved one directory
+level *above* this repo entirely, to a different, unrelated `.claude/skills/`
+directory that happened to exist on this machine. The correct depth is
+`parents[3]`.
+
+**Failure mode was silent, not a crash.** `make_skills_middleware()` builds a
+`FilesystemBackend(root_dir=str(_SKILLS_ROOT))` and passes it straight to
+`SkillsMiddleware(sources=[(str(_SKILLS_ROOT), "Conductor")])`. Neither call
+checks that the directory contains Conductor's skill - `_SKILLS_ROOT.exists()`
+was true (the wrong directory is real), so no exception ever fired. The
+**"Progressive disclosure confirmed"** finding above (metadata-only injection,
+full body read on demand) is an accurate description of how `SkillsMiddleware`
+behaves mechanically, but the `sources=` path backing that observation pointed
+at the wrong directory - it was never guaranteed to be exercising Conductor's
+`conductor-troubleshoot-connector` skill specifically. The existing
+`TestSkillsAdapter` tests (`test_make_skills_middleware_callable`,
+`test_make_skills_middleware_returns_middleware_or_none`) only assert the
+*shape* of the return value (an `AgentMiddleware` instance or `None`), which
+the wrong-directory case also satisfies.
+
+**Fixed:** path corrected to `parents[3]`. Added two regression tests to
+`TestSkillsAdapter`: `test_skills_root_resolves_inside_this_repo` (asserts
+`_SKILLS_ROOT` is `<repo>/.claude/skills` and that
+`conductor-troubleshoot-connector/SKILL.md` exists under it) and
+`test_middleware_sources_point_at_the_real_skill` (asserts the middleware's
+`sources` list actually contains `_SKILLS_ROOT`, not just that a middleware
+object was returned). 51/51 tests passing after the fix.
+
+**Not revisited:** this lab's reported adversarial eval pass rate (56%, 5/9) is
+left as originally recorded - the adversarial cases don't exercise the skills
+middleware directly, and re-running the live eval is out of scope for a
+mechanical path correction.

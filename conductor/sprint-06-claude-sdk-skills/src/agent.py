@@ -6,7 +6,8 @@ Sprint 6 changes from Sprint 5a:
   - Deterministic safety via PreToolUse / PermissionRequest hooks (RULE-SDK02)
   - SetupStateMachine state enforcement in PreToolUse and advanced in PostToolUse (RULE-STM01)
   - In-process MCP server via build_mcp_server(); tools named mcp__conductor__<name>
-  - setting_sources=["project"] enables conductor-troubleshoot-connector skill (RULE-SKL01)
+  - setting_sources=["project"] + cwd=<repo root> loads the shared conductor-troubleshoot-connector
+    skill from .claude/skills/ at repo root (RULE-SKL01) -- same file 6a/6b/6c/6d read from
   - Session persistence adapted: prior messages formatted as history_context injected into
     system prompt (SDK subprocess manages internal conversation; Stop hook saves to Redis/SQLite)
   - Qdrant-only memory provider (Redis memory provider + Mem0 dropped)
@@ -25,6 +26,7 @@ import hashlib
 import os
 import time
 import uuid
+from pathlib import Path
 
 import yaml
 from dotenv import load_dotenv
@@ -40,7 +42,8 @@ from .state import (
 )
 from .tools import build_mcp_server
 
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"), override=False)
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", "..", ".env"), override=False)
 
 MAX_TURNS = 8
 MODEL = "claude-haiku-4-5-20251001"
@@ -61,6 +64,10 @@ BLOCKED_BASH_PATTERNS = [
 HITL_TOOLS: frozenset[str] = frozenset({"mcp__conductor__write_connector_config"})
 
 _BOM_PATH = os.path.join(os.path.dirname(__file__), "..", "agent-bom.yaml")
+
+# Repo root -- cwd for ClaudeAgentOptions so setting_sources=["project"] resolves
+# .claude/skills/ at the shared root, same directory 6a/6b/6c/6d read from (RULE-SKL01).
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def _check_prompt_hash() -> str | None:
@@ -315,7 +322,8 @@ async def run(
             "Skill",  # conductor-troubleshoot-connector (RULE-SKL01)
         ],
         mcp_servers={"conductor": mcp_server},
-        setting_sources=["project"],  # loads .claude/skills/ from project root (RULE-SKL01)
+        cwd=str(_REPO_ROOT),
+        setting_sources=["project"],  # loads .claude/skills/ from repo root, not this lab folder (RULE-SKL01)
         permission_mode="dontAsk",  # all decisions via hooks, not interactive prompts (RULE-SDK01)
         max_turns=MAX_TURNS,
         # hooks must be dict[event_type, list[HookMatcher]] -- separate pre vs post

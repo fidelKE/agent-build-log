@@ -196,3 +196,35 @@ update dicts; routing is handled by edges, not Commands).
 | STM01 enforcement | PASS | test_setup_sm_rejects_write_before_validate + test_setup_sm_rejects_validate_before_read both pass |
 | Eval pass rate vs Lab 6 | PASS | 67% adversarial (6/9) - same dataset and score as Lab 6 baseline; full eval deferred to Lab 7a (KB not built yet) |
 | Fixes applied | Fixed session resume bug (non-consecutive SystemMessages on resume); fixed missing setup_sm_state in session_context log event; fixed BOM eval_dataset path (../../ -> ../) and version (v1 -> v2) |
+
+## Post-Publish Correction (found during Lab 6d's skills investigation)
+
+`src/skills.py`'s `_SKILLS_ROOT` used `Path(__file__).resolve().parents[4]`, an
+off-by-one that resolved one directory level *above* this repo entirely, to a
+different, unrelated `.claude/skills/` directory that happened to exist on this
+machine (a separate project's workspace, containing an unrelated skill). The
+correct depth is `parents[3]`.
+
+**Failure mode was silent, not a crash.** `load_skill()` checks `if not
+skill_path.exists(): return f"Skill file not found: {skill_path}"` - a well-formed,
+non-empty string with no YAML frontmatter. Every existing test in
+`TestLoadSkill` (`test_load_skill_returns_string`, `test_load_skill_strips_frontmatter`)
+checks only the *shape* of the return value, which the error string also
+satisfies. So `load_skill("conductor-troubleshoot-connector")` has been returning
+"Skill file not found: ..." instead of the real troubleshooting instructions for
+this entire lab's lifetime, and nothing in the existing suite could have caught it.
+
+**Fixed:** path corrected to `parents[3]`; live-verified `load_skill` now returns
+the real SKILL.md body (confirmed the string contains `check_connector_status`,
+which only the real content includes). Added two regression tests:
+`test_skills_root_resolves_inside_this_repo` (asserts the resolved path is inside
+this repo, not one level above it) and
+`test_load_skill_returns_real_skill_content_not_a_not_found_error` (asserts on
+content the "not found" string could never contain). 34/34 tests passing after
+the fix.
+
+**Not revisited:** this lab's reported eval pass rate (67% adversarial, 6/9) is
+left as originally recorded. The adversarial cases don't exercise
+`load_skill` directly, so this specific bug is unlikely to have changed that
+number, and re-running the live eval is out of scope for a mechanical path
+correction.

@@ -24,7 +24,7 @@ from src.tools import ToolExecutor
 BOM_PATH = Path(__file__).parents[1] / "agent-bom.yaml"
 
 SKILL_DIR = (
-    Path(__file__).parents[1]
+    Path(__file__).parents[3]  # repo root -- shared skill, not a lab-local copy
     / ".claude"
     / "skills"
     / "conductor-troubleshoot-connector"

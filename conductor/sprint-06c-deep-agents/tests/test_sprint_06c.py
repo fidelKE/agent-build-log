@@ -327,6 +327,30 @@ class TestSkillsAdapter:
             from deepagents.middleware import SkillsMiddleware
             assert isinstance(result, SkillsMiddleware)
 
+    def test_skills_root_resolves_inside_this_repo(self):
+        """Regression test: _SKILLS_ROOT must resolve to THIS repo's .claude/skills,
+        not a directory one level above it. A previous off-by-one (parents[4]
+        instead of parents[3]) resolved outside the repo to a different, unrelated
+        .claude/skills/ directory that happened to exist -- the exists() guard in
+        make_skills_middleware() never caught it, because that wrong directory is
+        real, it just doesn't contain conductor-troubleshoot-connector. The
+        middleware was wired in and silently pointed at the wrong skills."""
+        import src.skills as skills_module
+        repo_root = Path(__file__).resolve().parents[3]
+        assert skills_module._SKILLS_ROOT == repo_root / ".claude" / "skills"
+        assert (skills_module._SKILLS_ROOT / "conductor-troubleshoot-connector" / "SKILL.md").exists()
+
+    def test_middleware_sources_point_at_the_real_skill(self):
+        """The prior bug's failure mode returned a fully-constructed SkillsMiddleware
+        (isinstance check alone could not catch it) -- assert the source path it was
+        actually built with is the real repo skills directory, not just that some
+        SkillsMiddleware object exists."""
+        import src.skills as skills_module
+        result = make_skills_middleware()
+        assert result is not None
+        source_paths = [s[0] if isinstance(s, tuple) else s for s in result.sources]
+        assert any(str(p) == str(skills_module._SKILLS_ROOT) for p in source_paths)
+
 
 # ---------------------------------------------------------------------------
 # 7 — agent.py ceiling: no graph import

@@ -19,7 +19,13 @@ from pathlib import Path
 from langchain_core.tools import tool
 
 # Absolute path to the project .claude/skills/ directory
-_SKILLS_ROOT = Path(__file__).resolve().parents[4] / ".claude" / "skills"
+# Path depth verified live -- src/skills.py is 3 levels below the repo root
+# (src -> sprint-06a-langgraph -> conductor -> repo root), so parents[3] is
+# correct. parents[4] (the original value) resolved one level ABOVE the repo,
+# to a different, unrelated .claude/skills/ directory that happened to exist --
+# load_skill() never crashed, it silently returned "Skill file not found" for
+# every call. Confirmed while investigating the same bug across 6a/6b/6c.
+_SKILLS_ROOT = Path(__file__).resolve().parents[3] / ".claude" / "skills"
 
 # Names that map to SKILL.md files in .claude/skills/
 REGISTERED_SKILLS = frozenset({"conductor-troubleshoot-connector"})

@@ -140,13 +140,17 @@ UV_PROJECT_ENVIRONMENT=../.venv uv run pytest tests/test_sprint_06.py::TestSkill
 # Run from conductor/sprint-06-claude-sdk-skills/
 UV_PROJECT_ENVIRONMENT=../.venv uv run python -m scripts.run_loop \
   --eval-set ../../evals/trigger-evals/troubleshoot-trigger-eval.json \
-  --skill-path .claude/skills/conductor-troubleshoot-connector \
+  --skill-path ../../.claude/skills/conductor-troubleshoot-connector \
   --model claude-haiku-4-5-20251001 \
   --max-iterations 5 \
   --verbose
 ```
 
-Results written to `.claude/skills/conductor-troubleshoot-connector/optimization-results.json`.
+Results written to `../../.claude/skills/conductor-troubleshoot-connector/optimization-results.json`
+(the shared root skill -- Labs 6a/6b/6c/6d and this lab now all read the same file, so an
+optimized description benefits every port). The historical `optimization-results.json` still
+present in this lab's own `.claude/skills/` folder is evidence from when this lab had a local copy;
+left in place as a record, not overwritten.
 
 **6. Run tests** (Phase 4)
 

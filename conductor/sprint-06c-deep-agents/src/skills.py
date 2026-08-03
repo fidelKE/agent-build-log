@@ -13,7 +13,14 @@ deepagents.middleware, not at the top-level deepagents package.
 
 from pathlib import Path
 
-_SKILLS_ROOT = Path(__file__).resolve().parents[4] / ".claude" / "skills"
+# Path depth verified live -- src/skills.py is 3 levels below the repo root
+# (src -> sprint-06c-deep-agents -> conductor -> repo root), so parents[3] is
+# correct. parents[4] (the original value) resolved one level ABOVE the repo,
+# to a different, unrelated .claude/skills/ directory that happened to exist --
+# the exists() guard below never caught it because that wrong directory is
+# real, it just doesn't contain conductor-troubleshoot-connector. Confirmed
+# while investigating the same bug across 6a/6b/6c.
+_SKILLS_ROOT = Path(__file__).resolve().parents[3] / ".claude" / "skills"
 
 
 def make_skills_middleware():

@@ -12,7 +12,7 @@ tools:
     sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
   - name: agent.py
     file: src/agent.py
-    sha256: 569d4586b705d75a3709ea234c6bafaa36fae0d457f217679f8656ac8a337055
+    sha256: 05b25c5e6b7af83d36ba5f524a1c746a9b60034f1d1f81ebb0566dfee4f79650
   - name: logger.py
     file: src/logger.py
     sha256: fbe97b4aae9dbaa50d2f675206482477992f53375ac7b32a37f54eaaccf0a1cc

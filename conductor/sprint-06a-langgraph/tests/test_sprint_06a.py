@@ -277,6 +277,28 @@ class TestLoadSkill:
         assert hasattr(load_skill, "invoke")
         assert callable(load_skill.invoke)
 
+    def test_skills_root_resolves_inside_this_repo(self):
+        """Regression test: _SKILLS_ROOT must resolve to THIS repo's .claude/skills,
+        not a directory one level above it. A previous off-by-one (parents[4]
+        instead of parents[3]) resolved outside the repo to a different, unrelated
+        .claude/skills/ directory that happened to exist -- load_skill() never
+        raised, it silently returned 'Skill file not found' for every real call.
+        test_load_skill_returns_string alone could not catch this: the error
+        string is itself a non-empty string with no frontmatter."""
+        from src.skills import _SKILLS_ROOT
+        repo_root = Path(__file__).resolve().parents[3]
+        assert _SKILLS_ROOT == repo_root / ".claude" / "skills"
+        assert (_SKILLS_ROOT / "conductor-troubleshoot-connector" / "SKILL.md").exists()
+
+    def test_load_skill_returns_real_skill_content_not_a_not_found_error(self):
+        """The prior bug's failure mode returned a well-formed non-empty string
+        that would pass every other existing assertion in this class. Assert on
+        content that can only come from the real SKILL.md body."""
+        skill_name = next(iter(REGISTERED_SKILLS))
+        result = load_skill.invoke({"skill_name": skill_name})
+        assert "not found" not in result.lower()
+        assert "check_connector_status" in result
+
 
 # ---------------------------------------------------------------------------
 # Tool executor — connector tools (carried from Sprint 6)
