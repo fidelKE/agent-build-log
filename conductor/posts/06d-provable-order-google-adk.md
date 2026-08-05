@@ -271,7 +271,7 @@ Author the adversarial-only eval subset during the build phase, not mid-test. Ex
 
 ## Code
 
-Full implementation: `conductor/sprint-06d-google-adk/`
+[conductor/sprint-06d-google-adk](https://github.com/fidelKE/agent-build-log/tree/main/conductor/sprint-06d-google-adk)
 
 ---
 

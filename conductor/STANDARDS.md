@@ -274,6 +274,7 @@
 | 6a | LG01, LG02, LG03 | — | SDK01 scoped to sprint-6 only (LangGraph replaces the SDK harness). STM01 enforcement mechanism moved from PreToolUse hook to `pre_tool_check` node — contract (out-of-sequence blocked deterministically) unchanged. |
 | 6b | DA01, DA02, DA03 | — | [post-build scan results TBD] |
 | 6d | ADK01, ADK02, ADK03 | STM01 (superseded by ADK03 for sprint-6d only) | No violations in sprint-6d's own code (Part A). Part B: ADK01–03 are Google-ADK-specific (`LlmAgent`/`before_tool_callback`/`Workflow`) and have no applicable surface in any prior sprint's Claude SDK/LangGraph/LangChain/Deep Agents code — N/A across sprints 1–6c. Pre-existing gap noticed but not fixed (out of this sprint's scope): `RULE-DA02`/`DA03`/`DA04` are referenced in sprint-6c code comments and results.md but were never formally added to this file's Deep Agents category — left as-is, same treatment sprint-6b's own `[post-build scan results TBD]` row already received. RULE-A01 (hard iteration cap) satisfied via `RunConfig(max_llm_calls=8)`, ADK's native primitive — `RunStatus.LIMIT_REACHED` added to `state.py`. Mid-build pivot: initial implementation used `SequentialAgent`/`ParallelAgent`; found live (checking the installed `google-adk==2.6.1` package directly, not the docs) that both are `@deprecated` in favor of a new `Workflow` graph engine, confirmed it's a real usable public API (not the internal-only surface the deprecation notice's wording suggested), and rewrote `workflow.py`/`agent.py` on `Workflow(edges=[...])` before this sprint shipped — ADK01/ADK03 text corrected in place rather than superseded, since the draft hadn't shipped yet. |
+| 6e | OA01, OA02, OA03 | — | No violations in sprint-6e's own code (Part A). All three new rules are OpenAI Agents SDK-specific (`@function_tool`/`Agent.instructions`/`@input_guardrail`) — N/A for all prior sprints 1–6d (none import `openai-agents`). Live-discovered during build: `@function_tool` uses strict JSON schema mode by default (`strict_json_schema=True`); `dict` type hints trigger `UserError: additionalProperties should not be set for object types` — fixed by adding `@function_tool(strict_mode=False)` on three tools with open-dict params (`validate_credentials`, `write_connector_config`, `add_memory`). Live-discovered: agent names with hyphens (e.g. `conductor-setup`) cause SDK warnings about invalid tool name characters; renamed all agents to underscore convention (`conductor_setup` etc.). RULE-A01 satisfied via `RunConfig(max_turns=8)`, SDK's native primitive. |
 
 ---
 
@@ -437,5 +438,30 @@
 - **Requirement:** The Setup mode must use a graph wrapper (`google.adk.Workflow(edges=[...])` in this sprint) to enforce the step order (credential collection → validation → configuration → enable) architecturally. The step order must be enforced by the graph structure — verifiable directly on `workflow.graph.edges` — not by prompt instructions alone.
 - **Violation:** Setup mode implemented as a plain `LlmAgent` with step order enforced only via system prompt text; a graph wrapper used but nodes have no structural dependency (each could run independently in any order — e.g. all edges fan out from `START` with no chain between steps — the sequence is decorative, not enforced).
 - **Applies to:** `src/workflow.py` in sprint-6d.
+
+---
+
+## Category: OpenAI Agents SDK (OA)
+
+### RULE-OA01
+- **Sprint introduced:** 6e
+- **Status:** active
+- **Requirement:** Every tool registered with an OpenAI Agent must use the `@function_tool` decorator. The function's docstring is its model-visible description — it must be ≥30 chars and specific enough to unambiguously distinguish this tool from other tools in the registry. Type hints must be present on all parameters (Pydantic auto-generates the JSON schema from them). The implementation body must delegate to `ToolExecutor.execute()` so that RULE-T01/T02/T03 (Pydantic input validation, ToolError on bad input, `.model_dump()` output) continue to hold at the execution layer.
+- **Violation:** Tool registered without `@function_tool`; empty or generic docstring (<30 chars); missing type hints on one or more parameters; raw dict returned directly without going through ToolExecutor (bypasses RULE-T01/T02/T03).
+- **Applies to:** `src/tools.py` in sprint-6e (the `build_openai_tool_functions()` section).
+
+### RULE-OA02
+- **Sprint introduced:** 6e
+- **Status:** active
+- **Requirement:** Agent.instructions must be assembled from `SOUL.md` + `prompt.py` (via `build_mode_instructions()` or `build_all_modes_instructions()`). No inline string literals may be used as Agent instructions in `agents.py` except for the triage Agent's routing prompt (which has no mode content to extract). For Variant B, each specialist Agent's instructions must cover only its own mode section — not the full multi-mode prompt.
+- **Violation:** `Agent(instructions="You are a...")` with a hardcoded inline string in `agents.py` (except the triage routing prompt); specialist Agent receiving the full multi-mode prompt instead of its own mode section; instructions not loading `SOUL.md` content.
+- **Applies to:** `src/agents.py` and `src/prompt.py` in sprint-6e.
+
+### RULE-OA03
+- **Sprint introduced:** 6e
+- **Status:** active
+- **Requirement:** Credential leak detection must be implemented as an `@input_guardrail` async function on the Agent, not as a runtime check inside a tool function or as text in Agent.instructions. The guardrail must fire before every model call and set `tripwire_triggered=True` when credential keywords are detected. At minimum, Setup and Troubleshooting Agents must carry `input_guardrails=[no_credentials_guardrail]`.
+- **Violation:** Credential detection inside a tool function body; credential detection described only in Agent.instructions text; `input_guardrails=` absent from Setup or Troubleshooting Agents; guardrail function defined without `@input_guardrail` decorator.
+- **Applies to:** `src/agents.py` in sprint-6e.
 
 ---
